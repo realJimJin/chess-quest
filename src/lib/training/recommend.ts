@@ -495,7 +495,14 @@ export function recommendTraining(input: TrainingInput): TrainingRecommendation 
       add({ id: `new:${level.id}`, kind: "new_material", area: a.key, title: `${level.boss ? "Boss level" : `Level ${level.index + 1}`} · № ${level.first}–${level.last}`, minutes: left, mode, exerciseIds: take(fresh.slice(0, count)), bookId: level.bookId, chapterId: level.chapterId, levelId: level.id, reasons });
     } else if (left > 0) {
       const completed = pool.filter((e) => done.has(e.id)).length;
-      if (made.length) made[made.length - 1].minutes += left;
+      if (made.length) {
+        const last = made[made.length - 1];
+        last.minutes += left;
+        if (pick && budget === 0) {
+          last.reasons.push(goalReason(last.exerciseIds.length));
+          last.reasons.push({ code: "DAILY_GOAL_REACHED", text: `Your daily goal of ${n(dailyGoal, "exercise")} is filled by the planned blocks, so no new material is added.`, data: { dailyGoal } });
+        }
+      }
       else if (!pick) gap("NO_NEW_MATERIAL", `Every level in this area is cleared or already in today's plan (${completed} of ${pool.length} validated exercises completed); nothing new is left to add.`, { completed, trainableExercises: pool.length });
       else gap("DAILY_GOAL_REACHED", `Your daily goal of ${n(dailyGoal, "exercise")} is already filled by earlier blocks, so no exercises are added here.`, { dailyGoal });
     }

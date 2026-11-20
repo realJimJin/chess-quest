@@ -122,7 +122,7 @@ describe("empty and new libraries", () => {
   });
   it("new user with only an online rating: an even weaker prior, labelled in a caveat", () => {
     const r = recommendTraining(scenarios().newUserOnline);
-    expect(r.skill.difficulty).toMatchObject({ targetBand: 6, source: "online_prior" });   // 2100 online -> 0.5 position; the same number over the board would give 0.75
+    expect(r.skill.difficulty).toMatchObject({ targetBand: 7, source: "online_prior" }); // middle of [6, 7, 8], per ONLINE_PRIOR
     expect(r.skill.ratings).toEqual([{ label: "Online blitz", raw: "~2100 blitz", pool: "online", value: 2100, usedAsPrior: true }]);
     expect(reason(r, "DIFFICULTY_ONLINE_PRIOR")?.data).toMatchObject({ rating: 2100, pool: "online" });
     expect(r.caveats.some((c) => /online rating/.test(c) && /very weak/.test(c))).toBe(true);
@@ -196,7 +196,9 @@ describe("error categories", () => {
     const r = recommendTraining(scenarios().findings);
     const b = block(r, "weakness_drill")!;
     expect(b).toMatchObject({ id: "drill:missed_defence", mode: "deep" });
-    expect(b.exerciseIds).toEqual([d6[1].id, d6[0].id]);                      // exercises that carry the tag, most recent miss first
+    expect(b.exerciseIds).toEqual([d6[1].id]); // 15 min fits one 8 min deep exercise
+    const longer = recommendTraining({ ...scenarios().findings, sessionMinutes: 120 });
+    expect(block(longer, "weakness_drill")!.exerciseIds).toEqual([d6[1].id, d6[0].id]); // enough time for both, most recent first
     expect(b.reasons[0]).toMatchObject({ code: "WEAKNESS_FINDINGS", data: { category: "missed_defence", evidence: 1, selfReported: 1, weak: 0, recentMisses: 5, score: 5 } });
     expect(b.reasons[0].text).toMatch(/^2 of your last 5 misses were tagged missed defence: 1 from recorded evidence, 1 self-reported, 0 from weak signals\./);
     expect(r.evidence.categories.time_management).toEqual({ evidence: 0, selfReported: 0, weak: 1 });
@@ -245,7 +247,11 @@ describe("time spent", () => {
     expect(r.evidence).toMatchObject({ medianFlowMinutes: 1.5, medianDeepMinutes: 10 });
     expect(r.evidence.deepShare).toBeCloseTo(0.769, 2);
     expect(block(r, "deep_calculation")).toBeUndefined();                    // deep share is not low
-    expect(reason(r, "TIME_PER_EXERCISE")!.text).toMatch(/1\.5 min per exercise from your median of 1\.5 min over 12 non-deep attempts/);
+    expect(block(r, "new_material")!.mode).toBe("deep"); // first level cleared; next is the chapter's boss
+    expect(reason(r, "TIME_PER_EXERCISE")!.text).toMatch(/10 min per exercise from your median of 10 min over 6 deep attempts/);
+    const flow = recommendTraining(input({ attempts: tries(LIB.slice(0, 12), 7, { timeMs: 90000 }) }));
+    expect(block(flow, "new_material")!.mode).toBe("flow");
+    expect(block(flow, "new_material")!.reasons.find(r => r.code === "TIME_PER_EXERCISE")!.text).toMatch(/1\.5 min per exercise from your median of 1\.5 min over 12 non-deep attempts/);
   });
 });
 
