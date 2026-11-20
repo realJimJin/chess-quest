@@ -63,22 +63,24 @@ function Session() {
   if (!ready || !queue) return <p className="py-20 text-center text-mute">Loading your library…</p>;
   const ex = queue[idx] ? byId.get(queue[idx]) : undefined;
   const trainable = exercises.filter(isTrainable).length;
+  const mapBook = book ?? (level ? level.split(":")[0] : undefined);
+  const mapHref = mapBook ? `/world?book=${encodeURIComponent(mapBook)}` : "/world";
 
   if (!ex) {
     return (
       <div className="card mx-auto mt-10 max-w-lg p-8 text-center" data-testid="session-end">
         {trainable === 0 ? (<>
           <h1 className="text-xl font-semibold">No exercises in your library yet</h1>
-          <p className="mt-2 text-sm text-mute">This trainer only uses positions from your own copy of the book. Import it to start.</p>
-          <Link href="/import" className="btn btn-primary mt-5">Import the book</Link>
+          <p className="mt-2 text-sm text-mute">Start with eight original puzzles, or import your own exercise collection.</p>
+          <Link href="/" className="btn btn-primary mt-5">Open your library</Link>
         </>) : done > 0 ? (<>
           <h1 className="text-xl font-semibold">Session complete</h1>
           <p className="mt-2 text-sm text-mute">{done} exercise{done === 1 ? "" : "s"} worked through.</p>
-          <div className="mt-5 flex justify-center gap-2"><Link href="/" className="btn btn-primary">Back to the map</Link><Link href="/coach" className="btn">AI Coach</Link></div>
+          <div className="mt-5 flex justify-center gap-2"><Link href={mapHref} className="btn btn-primary">Back to the map</Link><Link href="/coach" className="btn">AI Coach</Link></div>
         </>) : (<>
           <h1 className="text-xl font-semibold">{mode === "review" ? "Nothing due for review" : "No exercises match"}</h1>
           <p className="mt-2 text-sm text-mute">{mode === "review" ? "Missed exercises come back here on a schedule." : "Try another chapter or difficulty."}</p>
-          <Link href="/" className="btn btn-primary mt-5">Back to the map</Link>
+          <Link href={mapHref} className="btn btn-primary mt-5">Back to the map</Link>
         </>)}
       </div>
     );
@@ -87,7 +89,7 @@ function Session() {
   const toggle = (key: string, v: boolean, set: (b: boolean) => void) => { set(v); try { localStorage.setItem(key, v ? "1" : "0"); } catch { /* ignore */ } };
   return (
     <div>
-      <div className={`mb-4 flex flex-wrap items-center justify-between gap-2 ${mode === "focus" ? "opacity-60 hover:opacity-100" : ""}`}>
+      <div className={`training-heading mb-4 flex flex-wrap items-center justify-between gap-2 ${mode === "focus" ? "opacity-60 hover:opacity-100" : ""}`}>
         <div>
           <h1 className="text-base font-semibold">{MODES[mode].title}</h1>
           {mode !== "focus" && <p className="text-xs text-mute">{MODES[mode].blurb}</p>}

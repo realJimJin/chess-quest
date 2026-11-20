@@ -201,7 +201,7 @@ export default function Runner({ ex, mode, position, onNext, autoAdvance, sessio
   const eng = ex.verification.engine;
 
   return (
-    <div className={`grid gap-5 ${minimal ? "mx-auto max-w-[min(72vh,720px)]" : "lg:grid-cols-[minmax(0,1fr)_380px]"}`}>
+    <div className={`training-layout grid gap-5 ${minimal ? "mx-auto max-w-[min(72vh,720px)]" : "lg:grid-cols-[minmax(0,1fr)_380px]"}`}>
       <div className={minimal ? "" : "mx-auto w-full max-w-[min(74vh,640px)]"}>
         <div className="mb-2 flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
@@ -219,7 +219,7 @@ export default function Runner({ ex, mode, position, onNext, autoAdvance, sessio
         <Board fen={view.fen} orientation={orientation} interactive={interactive} onMove={handleMove} lastMove={view.last} highlights={hintSquares} resetKey={resetKey} />
         {minimal && (
           <div className="mt-3 flex items-center justify-between gap-2">
-            <div className={`min-h-9 flex-1 rounded-lg border px-3 py-1.5 text-sm ${feedback ? TONE[feedback.tone] : "border-transparent text-mute"}`} data-testid="feedback">{feedback?.text ?? ""}</div>
+            <div className={`min-h-9 flex-1 rounded-lg border px-3 py-1.5 text-sm ${feedback ? TONE[feedback.tone] : "border-transparent text-mute"}`} data-testid="feedback" role="status" aria-live="polite">{feedback?.text ?? ""}</div>
             {!result ? <><button className="btn btn-ghost" onClick={showHint}>Hint</button><button className="btn btn-ghost" onClick={giveUp}>Solution</button></>
               : <button className="btn btn-primary" data-testid="next" onClick={onNext} autoFocus>Next →</button>}
           </div>
@@ -262,19 +262,19 @@ export default function Runner({ ex, mode, position, onNext, autoAdvance, sessio
                 </select></label>
               <label className="block"><span className="label">Final answer — first move</span>
                 <input className="field mt-1 font-mono" data-testid="deep-answer" placeholder="Qxh7+" value={rec.finalAnswer} onChange={(e) => setRec({ ...rec, finalAnswer: e.target.value })} onKeyDown={(e) => e.key === "Enter" && commitAnswer()} /></label>
-              {answerErr && <p className="text-xs text-bad">{answerErr}</p>}
+              {answerErr && <p className="text-xs text-bad" role="alert">{answerErr}</p>}
               {remaining > planned * 60000 * 0.5 && rec.finalAnswer && <p className="text-xs text-mute">More than half your time is left. Check the opponent&apos;s best defence once more?</p>}
               <button className="btn btn-primary" data-testid="deep-commit" disabled={!rec.finalAnswer.trim()} onClick={commitAnswer}>Commit answer</button>
             </div>
           )}
 
-          {feedback && <div className={`rounded-xl border px-4 py-3 text-sm ${TONE[feedback.tone]}`} data-testid="feedback">{feedback.text}</div>}
+          {feedback && <div className={`rounded-xl border px-4 py-3 text-sm ${TONE[feedback.tone]}`} data-testid="feedback" role="status" aria-live="polite">{feedback.text}</div>}
 
           {!result && phase === "play" && (
             <div className="card flex items-center gap-2 p-3">
               <button className="btn flex-1" data-testid="hint" onClick={showHint} disabled={!hints.length || hintLevel >= hints.length}>Hint {hintLevel ? `${hintLevel}/${hints.length}` : ""}</button>
               <button className="btn flex-1" data-testid="giveup" onClick={giveUp}>Show solution</button>
-              <button className="btn" onClick={() => setFlip(!flip)} title="Flip board (f)">⇅</button>
+              <button className="btn" onClick={() => setFlip(!flip)} title="Flip board (f)" aria-label="Flip board">⇅</button>
             </div>
           )}
 

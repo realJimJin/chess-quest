@@ -34,7 +34,7 @@ export default function Board({ fen, orientation, interactive, onMove, lastMove,
 
   useEffect(() => {
     if (!el.current) return;
-    const api = Chessground(el.current, { coordinates: true, animation: { duration: 180 }, highlight: { lastMove: true, check: true }, draggable: { showGhost: true } });
+    const api = Chessground(el.current, { coordinates: true, animation: { duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 180 }, highlight: { lastMove: true, check: true }, draggable: { showGhost: true } });
     cg.current = api;
     const ro = new ResizeObserver(() => api.redrawAll());
     ro.observe(el.current);
@@ -64,7 +64,7 @@ export default function Board({ fen, orientation, interactive, onMove, lastMove,
   const cancelPromo = () => { setPromo(null); cg.current?.set({ fen: fen.split(" ")[0] }); };
 
   return (
-    <div className="relative select-none" data-testid="board" data-fen={fen}>
+    <div className="board-frame relative select-none" data-testid="board" data-fen={fen}>
       <div ref={el} className="cg-wrap" />
       {promo && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-black/60" data-testid="promo-overlay">
