@@ -16,7 +16,8 @@
     "test:extraction": "extraction/.venv/bin/python -m pytest extraction/tests -q -p no:warnings",
     "extract": "cd extraction && .venv/bin/python -m csx.cli",
     "build:ios": "bash scripts/build-ios.sh",
-    "ios:open": "cap open ios"
+    "ios:open": "cap open ios",
+    "check:ui-export": "node scripts/check-ui-export.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.6.2",

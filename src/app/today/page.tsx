@@ -37,7 +37,7 @@ export default function Today() {
           <li key={i} className={`card flex items-center gap-4 p-4 ${p.available ? "" : "opacity-70"}`}>
             <div className="w-14 shrink-0 text-center"><div className="text-xl font-semibold tabular-nums">{p.minutes}</div><div className="text-[10px] uppercase tracking-wide text-mute">min</div></div>
             <div className="min-w-0 flex-1"><div className="font-medium">{p.title}</div><div className="text-sm text-mute">{p.detail}</div></div>
-            {p.href && p.cta ? <Link href={p.href} className={`btn ${i === 0 ? "btn-primary" : ""} shrink-0`}>{p.cta}</Link> : <span className="shrink-0 rounded-full border border-line px-2.5 py-1 text-[11px] text-mute">{p.available ? "" : "gap"}</span>}
+            {p.href && p.cta ? <Link href={p.href === "/" ? "/world" : p.href} className={`btn ${i === 0 ? "btn-primary" : ""} shrink-0`}>{p.cta}</Link> : <span className="shrink-0 rounded-full border border-line px-2.5 py-1 text-[11px] text-mute">{p.available ? "" : "gap"}</span>}
           </li>))}
       </ol>
       <div className="flex flex-wrap gap-2 text-sm">
