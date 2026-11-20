@@ -52,8 +52,8 @@ persistence integration, not a completed cloud-sync transport.
 | --- | --- | --- |
 | Claude snapshot before fixes | 72 passed, 5 failed | Failures investigated, not hidden |
 | Core after fixes, before combining | 77 passed | Independent core validation |
-| Combined JavaScript suite | 105 passed | Chess, recommendations, merge storage, database policies, UI integration |
-| React/DOM integration | 11 passed, included above | Library import, typed solve, calculation, hints, reflections, reset/remount, applied/storage events, failed-save retry, recommended session and changed map level |
+| Combined JavaScript suite | 106 passed | Chess, recommendations, merge storage, database policies, UI integration |
+| React/DOM integration | 12 passed, included above | Library import, typed solve, calculation, hints, reflections, reset/remount and reset failure, applied/storage events, failed-save retry, recommended session and changed map level |
 | Extraction and independent audit | 15 passed, 1 skipped | Synthetic pipeline, Stockfish, original-sample audit, invalid solutions and report redaction |
 | TypeScript | Passed | Combined source and tests |
 | Targeted ESLint / whitespace | Passed | Changed integration code |

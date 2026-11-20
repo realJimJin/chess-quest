@@ -12,8 +12,8 @@ const NAV: { href: string; label: string; icon: IconName }[] = [
   { href: "/profile", label: "Profile", icon: "user" },
 ];
 function ProgressNotice() {
-  const { progressError, retryProgressSave } = useApp();
-  return progressError ? <div role="alert" className="notice-error mb-5"><p>{progressError}</p><button className="btn mt-3" onClick={retryProgressSave}>Retry saving</button></div> : null;
+  const { progressError, canRetryProgressSave, retryProgressSave } = useApp();
+  return progressError ? <div role="alert" className="notice-error mb-5"><p>{progressError}</p>{canRetryProgressSave && <button className="btn mt-3" onClick={retryProgressSave}>Retry saving</button>}</div> : null;
 }
 export default function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();

@@ -8,6 +8,7 @@ import { onCloudApplied } from "./cloud/events";
 interface AppData {
   ready: boolean; library: Library; exercises: Exercise[]; progress: ProgressState;
   progressError: string | null;
+  canRetryProgressSave: boolean;
   retryProgressSave(): void;
   addAttempt(a: Attempt): void;
   amendAttempt(exerciseId: string, ts: number, patch: Partial<Attempt>): void;
@@ -23,7 +24,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [library, setLibrary] = useState<Library>({});
   const [progress, setProgress] = useState<ProgressState>(emptyProgress());
-  const [progressError, setProgressError] = useState<string | null>(null);
+  const [progressFailure, setProgressFailure] = useState<{ message: string; retrySave: boolean } | null>(null);
+  const progressError = progressFailure?.message ?? null;
+  const canRetryProgressSave = progressFailure?.retrySave ?? false;
   const pendingEdits = useRef<Array<(state: ProgressState) => ProgressState>>([]);
 
   useEffect(() => {
@@ -51,10 +54,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const edits = pendingEdits.current;
       const saved = store.update(state => edits.reduce((next, edit) => edit(next), state));
       pendingEdits.current = [];
-      setProgress(saved); setProgressError(null);
+      setProgress(saved); setProgressFailure(null);
     }
     catch {
-      setProgressError("Your latest progress could not be saved on this device. Keep this page open; it may be lost if you leave or reload.");
+      setProgressFailure({ message: "Your latest progress could not be saved on this device. Keep this page open; it may be lost if you leave or reload.", retrySave: true });
     }
   }, []);
   const updateProgress = useCallback((edit: (state: ProgressState) => ProgressState) => {
@@ -82,13 +85,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const lib = { ...(await loadLibrary()) }; delete lib[id]; await persist(lib);
   }, [persist]);
   const resetProgress = useCallback(() => {
-    void store.reset().then(() => { pendingEdits.current = []; setProgress(readProgress()); setProgressError(null); })
-      .catch(() => setProgressError("Progress could not be reset completely. Please try again."));
+    void store.reset().then(() => { pendingEdits.current = []; setProgress(readProgress()); setProgressFailure(null); })
+      .catch(() => setProgressFailure({ message: "Progress could not be reset completely. Use Reset progress in Profile to try again.", retrySave: false }));
   }, []);
 
   const exercises = useMemo(() => allExercises(library), [library]);
-  const value = useMemo(() => ({ ready, library, exercises, progress, progressError, retryProgressSave, addAttempt, amendAttempt, importBook, updateExercise, removeBook, resetProgress }),
-    [ready, library, exercises, progress, progressError, retryProgressSave, addAttempt, amendAttempt, importBook, updateExercise, removeBook, resetProgress]);
+  const value = useMemo(() => ({ ready, library, exercises, progress, progressError, canRetryProgressSave, retryProgressSave, addAttempt, amendAttempt, importBook, updateExercise, removeBook, resetProgress }),
+    [ready, library, exercises, progress, progressError, canRetryProgressSave, retryProgressSave, addAttempt, amendAttempt, importBook, updateExercise, removeBook, resetProgress]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

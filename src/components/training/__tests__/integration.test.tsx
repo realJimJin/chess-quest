@@ -129,6 +129,20 @@ describe("redesign and core integration", () => {
     await waitFor(() => expect(app.progress.attempts).toHaveLength(1));
     expect(app.progress.srs["samples-0001"]).toBeTruthy();
   });
+  it("preserves progress when writing the reset marker fails", async () => {
+    await mount(null);
+    act(() => app.addAttempt(failedAttempt()));
+    const realSet = Storage.prototype.setItem;
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(function (this: Storage, key, value) {
+      if (key === "cst.progress.reset") throw new DOMException("Storage full", "QuotaExceededError");
+      realSet.call(this, key, value);
+    });
+    act(() => app.resetProgress());
+    await screen.findByRole("alert");
+    expect(readProgress().attempts).toHaveLength(1);
+    expect(app.progress.attempts).toHaveLength(1);
+    expect(app.canRetryProgressSave).toBe(false);
+  });
   it("refreshes progress from another tab's storage event", async () => {
     await mount(null);
     act(() => {
