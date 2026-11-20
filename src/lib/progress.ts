@@ -1,22 +1,44 @@
 import type { Attempt, Category, Exercise, ProgressState, Srs } from "./types";
+import { mergeLocalSave } from "./cloud/merge";
+import { notifyLocalWrite } from "./cloud/events";
 
 export const DAY = 86400000;
 const LADDER = [1, 3, 7, 16, 35, 80];
 export const emptyProgress = (): ProgressState => ({ version: 1, attempts: [], srs: {} });
 
-/** Storage boundary: swap this for an account-backed adapter to sync later. */
-export interface ProgressStore { load(): Promise<ProgressState>; save(s: ProgressState): Promise<void> }
+/** Storage boundary. `save` folds a screen's edits into what is stored instead of
+ *  replacing it, so a stale tab or a background sync can never drop attempts.
+ *  Only `reset` removes anything. */
+export interface ProgressStore { load(): Promise<ProgressState>; save(s: ProgressState): Promise<void>; reset(): Promise<void> }
+
+export const PROGRESS_KEY = "cst.progress.v1";
+/** Time of the last "reset progress" on this device, waiting to reach the cloud. */
+export const RESET_KEY = "cst.progress.reset";
+
+export function readProgress(key = PROGRESS_KEY): ProgressState {
+  try {
+    const raw = localStorage.getItem(key);
+    const s = raw ? (JSON.parse(raw) as ProgressState) : null;
+    return s && s.version === 1 && Array.isArray(s.attempts) ? s : emptyProgress();
+  } catch { return emptyProgress(); }
+}
+/** Write without merging. For the sync engine, which has already merged. */
+export function writeProgress(s: ProgressState, key = PROGRESS_KEY) { localStorage.setItem(key, JSON.stringify(s)); }
 
 export class LocalProgressStore implements ProgressStore {
-  constructor(private key = "cst.progress.v1") {}
-  async load() {
-    try {
-      const raw = localStorage.getItem(this.key);
-      const s = raw ? (JSON.parse(raw) as ProgressState) : null;
-      return s && s.version === 1 && Array.isArray(s.attempts) ? s : emptyProgress();
-    } catch { return emptyProgress(); }
+  private key: string;
+  constructor(key = PROGRESS_KEY) { this.key = key; }
+  async load() { return readProgress(this.key); }
+  async save(s: ProgressState) {
+    const attempts = mergeLocalSave(readProgress(this.key).attempts, s.attempts, Date.now());
+    writeProgress({ version: 1, attempts, srs: rebuildSrs(attempts) }, this.key);
+    notifyLocalWrite("progress");
   }
-  async save(s: ProgressState) { localStorage.setItem(this.key, JSON.stringify(s)); }
+  async reset() {
+    writeProgress(emptyProgress(), this.key);
+    try { localStorage.setItem(RESET_KEY, String(Date.now())); } catch { /* reset still applies locally */ }
+    notifyLocalWrite("progress");
+  }
 }
 
 /** Spaced repetition: a miss enters the queue for tomorrow; each clean solve
@@ -35,6 +57,17 @@ export function recordAttempt(state: ProgressState, a: Attempt): ProgressState {
   const n = nextSrs(srs[a.exerciseId], a.result, a.ts);
   if (n) srs[a.exerciseId] = n;
   return { ...state, attempts: [...state.attempts, a], srs };
+}
+
+/** The spaced-repetition state is a pure function of the attempt log, replayed
+ *  in time order. Devices that hold the same attempts agree on what is due. */
+export function rebuildSrs(attempts: Attempt[]): Record<string, Srs> {
+  const srs: Record<string, Srs> = {};
+  for (const a of [...attempts].sort((x, y) => x.ts - y.ts)) {
+    const n = nextSrs(srs[a.exerciseId], a.result, a.ts);
+    if (n) srs[a.exerciseId] = n;
+  }
+  return srs;
 }
 
 export const dueReviews = (state: ProgressState, now: number): string[] =>
