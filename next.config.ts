@@ -8,8 +8,11 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   turbopack: {
+    root: process.cwd(),
     rules: {
       "*.css": {
+        // Keep CSS Modules on the native pipeline so class exports stay intact.
+        condition: { not: { path: "*.module.css" } },
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },
