@@ -19,7 +19,7 @@ A. Shared dark navy / warm ivory / muted gold tokens, readable typography, mobil
 B. Library-first entry, original starter collection available immediately, private imports preserved, search/filter, chapters, genuine progress, direct training/map entry.
 C. Sage/ivory board, restrained brass frame, accessible feedback announcements, reduced-motion board animation, and existing calculation/next-exercise controls preserved.
 D. Original illustrated academy landscape beneath existing domain-derived paths and level states. Maps stay optional. Keyboard-operable nodes.
-E. Book Battles presentation next, gated behind an explicit nonfunctional-preview state until a real backend exists.
+E. Book Battles at `/battles`: collection, lobby, match and results previews; Book Rush/Calculation Duel selection, paused clocks/unset scores, private collections solo-only, and real solo-practice entry. See `BATTLE_UI_HANDOFF.md` for the proposed service interface.
 
 ## Interfaces needed from Claude
 
@@ -55,3 +55,12 @@ No competing auth/database implementation is included here. Do not change curren
 - The library, board and map work is a draft vertical slice. Complete the browser checks before merging. Book Battles UI is the next separate milestone.
 
 The academy landscape in `public/art/academy-valley.png` is original AI-generated artwork created for this redesign. It contains no book text or publisher artwork. Interactive nodes and progress are drawn from the actual campaign data.
+
+## Follow-up: Book Battles and iOS export
+
+- Added the Book Battles presentation increment; no live PvP or competing backend is implemented.
+- A fresh checkout outside the stalled Documents folder resolved the local export stall. `npm run build:ios` now passes, including TypeScript, static export and Capacitor asset sync. This is not a signed native build or a device test.
+- Fixed the existing broad CSS loader rule so CSS Modules retain their class exports. The first export exposed missing class names; the corrected export has scoped classes and no stylesheet warnings.
+- Added `npm run check:ui-export` to check rendered module classes, emitted CSS, map artwork and the synchronized Capacitor page.
+- All 34 existing domain tests still pass. The new Battles components and entry points pass targeted ESLint.
+- Visual and interactive verification is tracked separately from these build checks.

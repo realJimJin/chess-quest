@@ -28,6 +28,6 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       </div>
     </header>
     <main id="main-content" className="app-main">{children}</main>
-    <footer className="app-footer" data-chrome><span>One position. A little deeper.</span><div><Link href="/privacy">Privacy</Link><Link href="/support">Support &amp; license</Link></div></footer>
+    <footer className="app-footer" data-chrome><span>One position. A little deeper.</span><div><Link href="/battles">Book Battles</Link><Link href="/privacy">Privacy</Link><Link href="/support">Support &amp; license</Link></div></footer>
   </AppProvider>;
 }
