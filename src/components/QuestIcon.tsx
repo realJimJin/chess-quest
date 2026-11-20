@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export type IconName = "book" | "map" | "target" | "spark" | "user" | "arrow" | "search" | "plus" | "shield" | "clock" | "knight" | "swords";
+export type IconName = "book" | "map" | "target" | "spark" | "user" | "arrow" | "search" | "plus" | "shield" | "clock" | "knight" | "swords" | "rotate";
 const paths: Record<IconName, ReactNode> = {
   book: <><path d="M12 5v15M3 4c4-1 6 0 9 2 3-2 5-3 9-2v15c-4-1-6 0-9 2-3-2-5-3-9-2Z" /></>,
   map: <><path d="m3 5 6-2 6 3 6-2v15l-6 2-6-3-6 2Zm6-2v15m6-12v15" /></>,
@@ -14,6 +14,7 @@ const paths: Record<IconName, ReactNode> = {
   clock: <><circle cx="12" cy="12" r="9" /><path d="M12 6v6l4 2" /></>,
   knight: <><path d="M6 21h14l-1-4H8Zm3-4c-1-4 3-6 5-8l-4 2-4-2 3-6 3 1 3-2c5 5 6 10 3 15" /><path d="m10 6 1 .1" /></>,
   swords: <><path d="m4 3 4 1 13 16-2 2L5 7Zm16 0-4 1-3 4M4 20l6-7M3 16l5 5m8-5 5-5" /></>,
+  rotate: <><path d="M20 10a8 8 0 0 0-14-4L3 9m0-6v6h6M4 14a8 8 0 0 0 14 4l3-3m0 6v-6h-6" /></>,
 };
 export default function QuestIcon({ name, className = "" }: { name: IconName; className?: string }) {
   return <svg className={`quest-icon ${className}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;

@@ -51,8 +51,8 @@ No competing auth/database implementation is included here. Do not change curren
 - New library, cover, icon, shell, campaign/map components and entry routes: ESLint passes.
 - Whitespace validation: passes.
 - Desktop/phone/iPad visual and interactive checks remain required: browser control became unavailable before the redesigned app could be inspected. Do not treat code checks as visual approval.
-- Local iOS export was attempted but stopped during its initial file move while disk space was critically low. Source API route is restored/present. No new signed IPA or device test is claimed.
-- The library, board and map work is a draft vertical slice. Complete the browser checks before merging. Book Battles UI is the next separate milestone.
+- Local iOS static export and Capacitor sync now pass from the stable checkout. No new signed IPA or device test is claimed.
+- Library, maps, training and Book Battles are reviewable presentation increments. Complete the browser checks before merging.
 
 The academy landscape in `public/art/academy-valley.png` is original AI-generated artwork created for this redesign. It contains no book text or publisher artwork. Interactive nodes and progress are drawn from the actual campaign data.
 
@@ -64,3 +64,13 @@ The academy landscape in `public/art/academy-valley.png` is original AI-generate
 - Added `npm run check:ui-export` to check rendered module classes, emitted CSS, map artwork and the synchronized Capacitor page.
 - All 34 existing domain tests still pass. The new Battles components and entry points pass targeted ESLint.
 - Visual and interactive verification is tracked separately from these build checks.
+
+## Follow-up: training workspace
+
+- Refined training layout, collection/chapter context, mode controls, exercise feedback and finish screen.
+- Added a structured Deep Calculation notebook and keyboard move entry through the existing chess.js/Runner path.
+- Session summaries count the actual attempts produced in that session, independently of future background sync.
+- Fixed stale session queues when changing map levels and keyboard activation conflicts on controls.
+- Existing 34 domain checks plus 7 keyboard-move checks pass; changed training files pass ESLint. iOS export, TypeScript and stylesheet/Capacitor checks pass.
+- `TRAINING_UI_HANDOFF.md` documents the presentation boundary and the observed reset-progress integration issue in Claude's uncommitted work.
+- Browser verification stays local, per the user's choice. No external browser service receives preview access. Local browser controls remain unavailable; visual acceptance is still pending.

@@ -169,10 +169,6 @@ cg-board square.last-move { background-color: #e8c26b65; }
 cg-board square.selected { background-color: #f0ce7285; }
 cg-board square.check { background: radial-gradient(ellipse at center, #e96860 0%, #cd3c3c99 40%, transparent 75%); }
 .cg-wrap coords { font-size: 10px; font-weight: 600; opacity: .8; }
-.training-heading { padding-bottom: 21px; margin-bottom: 24px; border-bottom: 1px solid #ffffff0c; }
-.training-heading h1 { font: 30px Georgia, serif; margin-bottom: 9px; }
-.training-layout > aside > .card { border-radius: 10px; }
-.training-layout h2 { font-family: Georgia, serif; font-size: 24px; font-weight: 400; }
 .journey-heading { margin-bottom: 24px; }
 .journey-heading h1 { font: 34px Georgia, serif; margin-bottom: 12px; }
 .journey-heading p { font-size: 12px; }
@@ -265,8 +261,6 @@ cg-board square.check { background: radial-gradient(ellipse at center, #e96860 0
   .practice-options h3 { font-size: 20px; }
   .practice-options p { max-width: 100%; }
   .board-frame { padding: 5px; }
-  .training-heading h1 { font-size: 28px; }
-  .training-heading .chip { min-height: 36px; }
   .journey-heading h1 { font-size: 29px; }
 }
 @media (prefers-reduced-motion: reduce) {

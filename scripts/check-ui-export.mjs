@@ -17,4 +17,13 @@ assert(!css.includes(":global("), "Unprocessed CSS Module global selectors reach
 assert((await stat("out/art/academy-valley.png")).size > 0, "Journey artwork is missing");
 const native = await readFile("ios/App/App/public/battles/index.html", "utf8");
 assert.equal(native, html, "Capacitor has a stale Book Battles page");
-console.log("UI export checks passed: CSS classes, stylesheets, map artwork, and Capacitor copy.");
+const training = await readFile("out/train/index.html", "utf8");
+const loadingClass = training.match(/<p class="([^\"]+)" role="status">Preparing your study space/)?.[1];
+assert(loadingClass && !loadingClass.includes("undefined"), "Training CSS Module exports were lost");
+const trainingSheets = [...training.matchAll(/href="([^\"]+\.css(?:\?[^\"]*)?)"/g)].map(match => new URL(match[1], "https://preview.invalid").pathname);
+const trainingCss = (await Promise.all(trainingSheets.map(path => readFile(join("out", path), "utf8")))).join("\n");
+assert(trainingCss.includes(`.${loadingClass}`), "Training has no matching stylesheet");
+assert(trainingCss.includes("notebookBody"), "Calculation notebook styles are missing");
+assert(!trainingCss.includes(":global("), "Unprocessed training selectors reached the export");
+assert.equal(await readFile("ios/App/App/public/train/index.html", "utf8"), training, "Capacitor has a stale training page");
+console.log("UI export checks passed: Battles and training CSS, notebook styles, map artwork, and Capacitor copies.");
