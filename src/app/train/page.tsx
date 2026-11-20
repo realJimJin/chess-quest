@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Runner from "@/components/Runner";
 import SessionSummary from "@/components/training/SessionSummary";
 import styles from "@/components/training/training.module.css";
+import { requestedExerciseIds } from "@/components/training/plan";
 import { useApp } from "@/lib/store";
 import { isTrainable } from "@/lib/validate";
 import { computeStats, dueReviews } from "@/lib/progress";
@@ -27,6 +28,7 @@ function Session() {
   const q = useSearchParams();
   const mode = (["flow", "deep", "review", "focus"].includes(q.get("mode") ?? "") ? q.get("mode") : "flow") as Mode;
   const book = q.get("book"), chapter = q.get("chapter"), id = q.get("id"), minDiff = Number(q.get("min") ?? 0), level = q.get("level");
+  const requested = q.get("ids");
   const { exercises, progress, library } = useApp();
   const [idx, setIdx] = useState(0);
   const [sessionStart] = useState(() => Date.now());
@@ -41,7 +43,8 @@ function Session() {
     const pool = exercises.filter(isTrainable);
     const byId = new Map(pool.map((e) => [e.id, e]));
     let ids: string[];
-    if (id) ids = byId.has(id) ? [id] : [];
+    if (requested !== null) ids = requestedExerciseIds(requested, new Set(byId.keys()));
+    else if (id) ids = byId.has(id) ? [id] : [];
     else if (level) {
       const solved = computeStats(progress, pool, Date.now()).doneIds;
       const lv = buildCampaign(level.split(":")[0], exercises, solved, true).levels.find((l) => l.id === level);
@@ -102,7 +105,7 @@ function Session() {
         </div>
         <nav className={styles.modeNav} aria-label="Training mode">
           {(Object.keys(MODES) as Mode[]).map((m) => {
-            const p = new URLSearchParams(q.toString()); p.set("mode", m); p.delete("id");
+            const p = new URLSearchParams(q.toString()); p.set("mode", m); p.delete("id"); p.delete("ids");
             return <Link key={m} href={`/train?${p}`} aria-current={m === mode ? "page" : undefined}>{MODES[m].short}</Link>;
           })}
         </nav>
@@ -125,7 +128,7 @@ function SessionRoute() {
   const { ready } = useApp();
   // A changed chapter, level or mode starts a fresh UI session. The provider and
   // its saved attempts stay mounted; only the fixed queue and timers restart.
-  const identity = JSON.stringify(["mode", "book", "chapter", "id", "min", "level"].map(key => query.get(key)));
+  const identity = JSON.stringify(["mode", "book", "chapter", "id", "ids", "min", "level"].map(key => query.get(key)));
   if (!ready) return <p className={styles.loading} role="status">Preparing your study space…</p>;
   return <Session key={identity} />;
 }

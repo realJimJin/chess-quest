@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AppProvider } from "@/lib/store";
+import { AppProvider, useApp } from "@/lib/store";
 import QuestIcon, { type IconName } from "./QuestIcon";
 
 const NAV: { href: string; label: string; icon: IconName }[] = [
@@ -11,6 +11,10 @@ const NAV: { href: string; label: string; icon: IconName }[] = [
   { href: "/coach", label: "Coach", icon: "spark" },
   { href: "/profile", label: "Profile", icon: "user" },
 ];
+function ProgressNotice() {
+  const { progressError, retryProgressSave } = useApp();
+  return progressError ? <div role="alert" className="notice-error mb-5"><p>{progressError}</p><button className="btn mt-3" onClick={retryProgressSave}>Retry saving</button></div> : null;
+}
 export default function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   return <AppProvider>
@@ -27,7 +31,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <span className="header-note"><span /> Your personal study</span>
       </div>
     </header>
-    <main id="main-content" className="app-main">{children}</main>
+    <main id="main-content" className="app-main"><ProgressNotice />{children}</main>
     <footer className="app-footer" data-chrome><span>One position. A little deeper.</span><div><Link href="/battles">Book Battles</Link><Link href="/privacy">Privacy</Link><Link href="/support">Support &amp; license</Link></div></footer>
   </AppProvider>;
 }
