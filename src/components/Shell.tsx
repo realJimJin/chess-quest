@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppProvider, useApp } from "@/lib/store";
+import { IS_IOS } from "@/lib/target";
 import QuestIcon, { type IconName } from "./QuestIcon";
 
 const NAV: { href: string; label: string; icon: IconName }[] = [
@@ -21,7 +22,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     <a className="skip-link" href="#main-content">Skip to content</a>
     <aside className="app-rail" data-chrome>
       <Link href="/" className="brand-mark" aria-label="Chess Quest home"><QuestIcon name="knight" /></Link>
-      <nav className="main-nav" aria-label="Main navigation">{NAV.map(({ href, label, icon }) => {
+      <nav className="main-nav" aria-label="Main navigation">{NAV.filter(item => !IS_IOS || item.href !== "/battles").map(({ href, label, icon }) => {
         const on = href === "/" ? ["/", "/library", "/import"].includes(path) : path.startsWith(href) || (href === "/today" && path === "/train");
         return <Link key={href} href={href} className="nav-link" aria-current={on ? "page" : undefined}><QuestIcon name={icon} /><span>{label}</span></Link>;
       })}</nav>

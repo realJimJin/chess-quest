@@ -3,9 +3,7 @@
 Copy these into App Store Connect. Character limits are Apple's.
 
 ## Name (30)
-Chess Quest
-
-If taken: `Chess Quest: Calculation`
+Chess Quest: Calculation
 
 ## Subtitle (30)
 Train deep chess calculation
@@ -16,8 +14,8 @@ Turn chess exercises into a campaign. Solve on the board, think in Deep Calculat
 ## Description (4000)
 Chess Quest is a calculation trainer for players who want to get stronger over the board, not faster at tapping.
 
-A CAMPAIGN, NOT A LIST
-Your exercises become a map. Each tower is a level, each fortress is a boss, and the road ahead opens as you clear what is in front of you.
+A JOURNEY THROUGH YOUR LIBRARY
+Your exercises become a beautifully illustrated map. Each milestone is a real level, and the road ahead opens as you work through your collection.
 
 SOLVE ON A REAL BOARD
 Drag or tap the pieces. Legal moves, promotions, castling and en passant all work as they should. Play the whole line, not just the first move.
@@ -69,15 +67,18 @@ No non-exempt encryption. The build already declares this, so Apple should not a
 ## App Review notes
 Chess Quest is a chess calculation trainer. No sign-in is required.
 
-To review the app:
-1. Launch the app. On the World screen tap "Try the sample pack". This loads eight original puzzles written for the app.
-2. Tap Play at the bottom to start the level. Tap a piece, then its destination, to move.
-3. To see Deep Calculation, go back to World and tap Deep.
-4. Train, AI Coach and Profile show the daily plan, mistake analysis and progress.
+To review version 1.0, build 2:
+1. Launch the app. Library opens with The Starter Collection, containing eight original puzzles. Tap Start studying to begin. No account or import is needed.
+2. Move pieces by tapping a piece and then its destination, or use the notation field below the board. The first puzzle's solution is Rd8#.
+3. Open Calculate in the training screen, or Calculate beside Sample puzzles in Library. Open the calculation notebook, enter candidates, variations and your first move, then commit it.
+4. Journey displays the collection's illustrated level map and actual completion. Training creates a study plan from recorded practice. Coach and Profile are linked in the footer.
+5. After revealing a solution, Try again provides practice without replacing the original attempt or awarding extra XP.
+
+This release contains solo training only. Multiplayer previews, account sign-in and cloud sync are not part of the iOS app.
 
 Importing your own exercises (Library > Import a book) reads a JSON file from Files and stores it on the device only. The app makes no network requests and collects no data.
 
-Chess Quest is open source under the GNU GPL v3 (or later). The full source is public at https://github.com/realJimJin/chess-quest, and the license notice is on the Support & license screen, linked from the bottom of every screen. It includes the chessground board and the Stockfish engine, both GPL v3.
+Chess Quest is open source under the GNU GPL v3 (or later). The full source is public at https://github.com/realJimJin/chess-quest/tree/v1.0-build2, and the license notice is on the Support & license screen, linked from the bottom of every screen. It includes the chessground board and the Stockfish engine, both GPL v3.
 
 ## Before you submit
 - The support page shows jimjin135@gmail.com as the contact address.

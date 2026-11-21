@@ -6,6 +6,7 @@
 	<key>destination</key><string>export</string>
 	<key>teamID</key><string>U89KC7ZM79</string>
 	<key>signingStyle</key><string>automatic</string>
+	<key>manageAppVersionAndBuildNumber</key><false/>
 	<key>uploadSymbols</key><true/>
 </dict>
 </plist>
