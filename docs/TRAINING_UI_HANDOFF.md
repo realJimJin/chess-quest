@@ -64,3 +64,10 @@ Before merging, use local browser control to verify desktop, phone and iPad flow
 
 Browser checks and real-device iOS checks are separate release gates. An iOS
 static export does not constitute a signed build or a TestFlight test.
+
+## Integration branch follow-up
+
+On `codex/integration-core-redesign`, the reset and successive-amendment issues
+above are resolved and covered by storage and rendered-component regression tests.
+The Training page now consumes Claude's recommender, with exact-set session entry.
+See `INTEGRATION_VALIDATION.md` for the source snapshot, checks and remaining gates.

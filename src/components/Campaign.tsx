@@ -50,16 +50,8 @@ export default function World() {
   const need = sel ? Math.ceil(selEx * PASS_RATIO) : 0;
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-      <div>
-        <div className="journey-heading mb-3 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <Link href="/library" className="eyebrow mb-3">← BACK TO LIBRARY</Link>
-            <h1 className="text-2xl font-semibold tracking-tight">{camp.bookId === "samples" ? "The Starter Collection" : library[camp.bookId]?.book.title.split(" — ")[0] ?? "Campaign"}</h1>
-            <p className="text-xs text-mute">{camp.regions.length} {camp.regions.length === 1 ? "region" : "regions"} · {camp.levels.length} {camp.levels.length === 1 ? "level" : "levels"} · your learning journey</p>
-          </div>
-          {books.length > 1 && <select aria-label="Choose a collection for the map" className="field w-auto" value={active ?? ""} onChange={(e) => setBookId(e.target.value)}>{books.map((b) => <option key={b.book.id} value={b.book.id}>{b.book.title}</option>)}</select>}
-        </div>
+    <div className="journey-layout">
+      <div className="journey-landscape">
         <div className="map-frame relative">
           <WorldMap camp={camp} selectedId={sel?.id ?? null} onPick={setPicked} currentRef={currentRef} />
           <div className="map-legend"><span><i />Available</span><span><i />Completed</span><span><i />Locked</span></div>
@@ -79,7 +71,16 @@ export default function World() {
             </>}
           </div>
         </div>)}
-      <aside className="flex flex-col gap-3 pb-24 lg:sticky lg:top-20 lg:self-start lg:pb-0">
+      <aside className="journey-rail">
+        <div className="journey-heading mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <Link href="/library" className="eyebrow mb-3">← BACK TO LIBRARY</Link>
+            <h1 className="text-2xl font-semibold tracking-tight">{camp.bookId === "samples" ? "The Starter Collection" : library[camp.bookId]?.book.title.split(" — ")[0] ?? "Campaign"}</h1>
+            <p className="text-xs text-mute">{camp.regions.length} {camp.regions.length === 1 ? "region" : "regions"} · {camp.levels.length} {camp.levels.length === 1 ? "level" : "levels"} · your learning journey</p>
+          </div>
+          {books.length > 1 && <select aria-label="Choose a collection for the map" className="field w-auto" value={active ?? ""} onChange={(e) => setBookId(e.target.value)}>{books.map((b) => <option key={b.book.id} value={b.book.id}>{b.book.title}</option>)}</select>}
+        </div>
+
         <div className="card p-4">
           <div className="flex items-baseline justify-between"><span className="label">Rank {rank.level}</span><span className="text-xs text-mute">{rank.into}/{rank.span} XP</span></div>
           <div className="mt-1 text-lg font-semibold">{rank.title}</div>

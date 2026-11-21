@@ -26,4 +26,11 @@ assert(trainingCss.includes(`.${loadingClass}`), "Training has no matching style
 assert(trainingCss.includes("notebookBody"), "Calculation notebook styles are missing");
 assert(!trainingCss.includes(":global("), "Unprocessed training selectors reached the export");
 assert.equal(await readFile("ios/App/App/public/train/index.html", "utf8"), training, "Capacitor has a stale training page");
-console.log("UI export checks passed: Battles and training CSS, notebook styles, map artwork, and Capacitor copies.");
+const plan = await readFile("out/today/index.html", "utf8");
+const planClass = plan.match(/<p class="([^\"]+)" role="status">Preparing your training plan/)?.[1];
+assert(planClass && !planClass.includes("undefined"), "Training plan CSS Module exports were lost");
+const planSheets = [...plan.matchAll(/href="([^\"]+\.css(?:\?[^\"]*)?)"/g)].map(match => new URL(match[1], "https://preview.invalid").pathname);
+const planCss = (await Promise.all(planSheets.map(path => readFile(join("out", path), "utf8")))).join("\n");
+assert(planCss.includes(`.${planClass}`) && planCss.includes("sessionTop"), "Training plan styles are missing");
+assert.equal(await readFile("ios/App/App/public/today/index.html", "utf8"), plan, "Capacitor has a stale training plan");
+console.log("UI export checks passed: Battles, training and plan CSS, notebook styles, map artwork, and Capacitor copies.");

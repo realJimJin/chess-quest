@@ -1,0 +1,49 @@
+.plan { max-width: 1080px; margin: 0 auto; }
+.heading { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 25px; margin-bottom: 30px; }
+.heading h1 { font: 42px/1.13 var(--font-display); letter-spacing: -.03em; margin: 12px 0 16px; }
+.heading p { color: var(--color-mute); font-size: 13px; line-height: 1.8; }
+.duration { display: flex; align-items: center; gap: 13px; padding: 16px; border: 1px solid var(--color-line); border-radius: 8px; color: var(--color-accent); }
+.duration span { display: flex; flex-direction: column; gap: 9px; font-size: 10px; color: var(--color-mute); }
+.duration select { min-width: 155px; }
+.overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 25px 0; margin-bottom: 33px; border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line); }
+.overview div { display: flex; flex-direction: column; gap: 10px; padding-left: 18px; border-left: 1px solid var(--color-line); }
+.overview div:first-child { border: 0; padding-left: 0; }
+.overview strong { font: 32px var(--font-display); }
+.overview span { color: var(--color-mute); font-size: 10px; }
+.columns { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 36px; }
+.sectionTitle { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
+.sectionTitle h2 { font: 25px var(--font-display); }
+.sectionTitle > span { color: var(--color-mute); font-size: 10px; }
+.sessions { display: flex; flex-direction: column; gap: 16px; }
+.session { padding: 24px; background: linear-gradient(120deg, #202630, #17382e); border: 1px solid var(--color-line); border-radius: 10px; }
+.sessionTop { display: flex; align-items: center; gap: 12px; margin-bottom: 19px; }
+.number { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #d7b97a40; border-radius: 50%; color: var(--color-accent); font-size: 9px; }
+.minutes { margin-left: auto; color: var(--color-mute); font-size: 11px; white-space: nowrap; }
+.session h3 { font: 26px/1.25 var(--font-display); margin-bottom: 10px; }
+.session > p { color: var(--color-mute); font-size: 11px; line-height: 1.8; }
+.reasons { margin: 17px 0; font-size: 11px; color: var(--color-mute); line-height: 1.8; }
+.reasons summary, .caveats summary { cursor: pointer; color: var(--color-accent); min-height: 30px; }
+.reasons ul, .caveats ul { display: flex; flex-direction: column; gap: 10px; margin: 9px 0 14px; }
+.reasons li { padding-left: 12px; border-left: 1px solid var(--color-line); }
+.session > button { width: 100%; }
+.sidebar { display: flex; flex-direction: column; gap: 25px; }
+.basis { padding: 24px; background: #d7b97a06; border: 1px solid #d7b97a30; border-radius: 10px; }
+.basis h2 { font: 26px var(--font-display); margin: 12px 0 16px; }
+.basis p { color: var(--color-mute); font-size: 12px; line-height: 1.9; margin: 12px 0; }
+.basis a { display: flex; align-items: center; gap: 10px; color: var(--color-accent); font-size: 11px; margin-top: 20px; line-height: 1.7; }
+.gaps h2 { font: 22px var(--font-display); }
+.gaps > p, .gaps li p, .caveats { color: var(--color-mute); font-size: 11px; line-height: 1.8; margin-top: 12px; }
+.gaps li { padding: 16px 0; border-bottom: 1px solid var(--color-line); }
+.gaps li strong { font-size: 12px; font-weight: 500; }
+.gaps li span { display: block; color: var(--color-accent); font-size: 10px; margin-top: 6px; }
+.gaps li p { margin-top: 8px; }
+.empty { border: 1px solid var(--color-line); border-radius: 10px; padding: 35px; }
+.empty h3 { font: 28px var(--font-display); margin: 18px 0 13px; }
+.empty p { color: var(--color-mute); font-size: 12px; line-height: 1.8; margin-bottom: 20px; }
+.loading { padding: 80px 20px; text-align: center; color: var(--color-mute); }
+@media (max-width: 800px) { .columns { grid-template-columns: minmax(0, 1fr); }.sidebar { gap: 20px; } }
+@media (max-width: 600px) {
+  .heading h1 { font-size: 33px; }.duration { width: 100%; }.duration span { flex: 1; }.duration select { font-size: 16px; }
+  .overview { gap: 10px; }.overview div { padding-left: 10px; }.overview strong { font-size: 27px; }.overview span { font-size: 9px; line-height: 1.6; }
+  .session { padding: 20px; }.session h3 { font-size: 24px; }.sessionTop :global(.eyebrow) { font-size: 8px; }
+}
