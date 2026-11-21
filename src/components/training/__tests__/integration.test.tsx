@@ -15,9 +15,10 @@ import type { Attempt } from "../../../lib/types";
 import LibraryExperience from "../../LibraryExperience";
 import TrainingPlan from "../TrainingPlan";
 import TrainPage from "../../../app/train/page";
+import Shell from "../../Shell";
 
-const navigation = vi.hoisted(() => ({ query: new URLSearchParams(), push: vi.fn() }));
-vi.mock("next/navigation", () => ({ useSearchParams: () => navigation.query, useRouter: () => ({ push: navigation.push }) }));
+const navigation = vi.hoisted(() => ({ query: new URLSearchParams(), pathname: "/", push: vi.fn() }));
+vi.mock("next/navigation", () => ({ usePathname: () => navigation.pathname, useSearchParams: () => navigation.query, useRouter: () => ({ push: navigation.push }) }));
 vi.mock("next/link", () => ({ default: ({ href, children, ...props }: { href: string; children: ReactNode }) => <a href={href} {...props}>{children}</a> }));
 // DOM tests exercise the real trainer and storage. Chessground rendering and
 // pointer geometry remain a separate real-browser/device verification gate.
@@ -46,11 +47,26 @@ beforeEach(async () => {
   localStorage.clear();
   localStorage.setItem("cst.auto", "0");
   await saveLibrary({});
-  navigation.query = new URLSearchParams(); navigation.push.mockReset();
+  navigation.query = new URLSearchParams(); navigation.pathname = "/"; navigation.push.mockReset();
 });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("redesign and core integration", () => {
+  it.each([
+    ["/", "library", "Library"],
+    ["/library", "library", "Library"],
+    ["/library/", "library", "Library"],
+    ["/train/", "study", "Training"],
+    ["/world/", "study", "Journey"],
+  ])("keeps the correct theme and navigation on %s", async (pathname, surface, current) => {
+    navigation.pathname = pathname;
+    const view = render(<Shell><Observe /><LibraryExperience /></Shell>);
+    await waitFor(() => expect(app.ready).toBe(true));
+    expect(view.container.querySelector(".app-shell")?.getAttribute("data-surface")).toBe(surface);
+    const nav = screen.getByRole("navigation", { name: "Main navigation" });
+    expect(nav.querySelector('[aria-current="page"]')?.textContent).toBe(current);
+    expect(nav.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+  });
   it("shows original content without writing the library, then imports it on an explicit study action", async () => {
     await mount(<LibraryExperience />);
     expect(await loadLibrary()).toEqual({});

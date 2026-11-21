@@ -71,8 +71,8 @@ PDF and original puzzle tests pass. No private source document was published.
 
 ## Release gates still open
 
-- Local desktop/phone/iPad visual and interaction checks. Local browser controls
-  are unavailable in this chat; external browser testing was declined by the user.
+- Browser checks completed November 21 at desktop, phone and iPad viewport sizes;
+  see `VISUAL_REDESIGN_VALIDATION.md`. Native WebView and real-device checks remain open.
 - Auth0 sign-in, real account migration and cross-device/offline reconciliation.
   Claude's snapshot contains dependencies, schema and merge foundations, but no
   completed authentication routes or sync transport. No account feature is enabled.
@@ -85,5 +85,6 @@ PDF and original puzzle tests pass. No private source document was published.
   build, screenshots and privacy details reflecting what actually ships.
 
 No production deployment, App Store submission, or merge to main is authorized
-by this integration increment. The next review should start with local visual
-checks and the missing backend services, preserving these tested interfaces.
+by this integration increment. Local browser checks are now recorded in
+`VISUAL_REDESIGN_VALIDATION.md`; missing backend services and real-device
+verification remain separate release gates.
