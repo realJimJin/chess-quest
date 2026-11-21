@@ -14,7 +14,7 @@ assert(stylesheets.length > 0, "Export has no stylesheets");
 const css = (await Promise.all(stylesheets.map(path => readFile(join("out", path), "utf8")))).join("\n");
 assert(css.includes(`.${className}`), "The rendered module class has no matching stylesheet rule");
 assert(!css.includes(":global("), "Unprocessed CSS Module global selectors reached the export");
-assert((await stat("out/art/academy-valley.png")).size > 0, "Journey artwork is missing");
+assert((await stat("out/art/figma-make/journey.png")).size > 0, "Journey artwork is missing");
 const native = await readFile("ios/App/App/public/battles/index.html", "utf8");
 assert.equal(native, html, "Capacitor has a stale Book Battles page");
 const training = await readFile("out/train/index.html", "utf8");

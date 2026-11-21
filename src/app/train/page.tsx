@@ -13,10 +13,10 @@ import { buildCampaign } from "@/lib/game";
 import type { Attempt, Mode } from "@/lib/types";
 
 const MODES: Record<Mode, { title: string; short: string; blurb: string }> = {
-  flow: { title: "One position at a time.", short: "Puzzle Flow", blurb: "Find the idea. Play it through. Carry what you learn into the next position." },
-  deep: { title: "Make room for a deeper idea.", short: "Calculate", blurb: "Keep the pieces still. Consider your candidates and write the line you believe in." },
-  review: { title: "See it with fresh eyes.", short: "Review", blurb: "Return to the positions that deserve another thoughtful look." },
-  focus: { title: "Just you and the position.", short: "Focus", blurb: "A little less around you. A little more attention on the board." },
+  flow: { title: "Practice on the board.", short: "Puzzle Flow", blurb: "Find the idea. Play it through. Carry what you learn into the next position." },
+  deep: { title: "Calculation notebook.", short: "Calculate", blurb: "Keep the pieces still. Consider your candidates and write the line you believe in." },
+  review: { title: "Review your positions.", short: "Review", blurb: "Return to the positions that deserve another thoughtful look." },
+  focus: { title: "Focus training.", short: "Focus", blurb: "A little less around you. A little more attention on the board." },
 };
 
 function savedPreference(key: string, fallback: boolean) {
@@ -31,6 +31,7 @@ function Session() {
   const requested = q.get("ids");
   const { exercises, progress, library } = useApp();
   const [idx, setIdx] = useState(0);
+  const [tries, setTries] = useState(0);
   const [sessionStart] = useState(() => Date.now());
   const [auto, setAuto] = useState(() => savedPreference("cst.auto", true));
   const [timer, setTimer] = useState(() => savedPreference("cst.timer", false));
@@ -63,7 +64,8 @@ function Session() {
     return ids;
   });
 
-  const next = useCallback(() => { setDone((d) => d + 1); setIdx((i) => i + 1); }, []);
+  const next = useCallback(() => { setDone((d) => d + 1); setTries(0); setIdx((i) => i + 1); }, []);
+  const retry = useCallback(() => setTries(value => value + 1), []);
   const recordInSession = useCallback((attempt: Attempt) => setSessionAttempts(attempts => [...attempts, attempt]), []);
   const byId = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
 
@@ -118,7 +120,7 @@ function Session() {
           {mode === "focus" && typeof document !== "undefined" && document.fullscreenEnabled && <button onClick={() => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => undefined))}>Full screen</button>}
         </div>
       </div>
-      <Runner key={`${ex.id}:${idx}`} ex={ex} mode={mode} position={`${idx + 1}/${queue.length}`} onNext={next} onRecorded={recordInSession} autoAdvance={auto} sessionStart={sessionStart} showSessionTimer={mode === "focus" && timer} />
+      <Runner key={`${ex.id}:${idx}:${tries}`} practice={tries > 0} onRetry={retry} ex={ex} mode={mode} position={`${idx + 1}/${queue.length}`} onNext={next} onRecorded={recordInSession} autoAdvance={auto} sessionStart={sessionStart} showSessionTimer={mode === "focus" && timer} />
     </div>
   );
 }

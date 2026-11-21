@@ -499,7 +499,7 @@ export function recommendTraining(input: TrainingInput): TrainingRecommendation 
         const last = made[made.length - 1];
         last.minutes += left;
         if (pick && budget === 0) {
-          last.reasons.push(goalReason(last.exerciseIds.length));
+          if (!last.reasons.some(reason => reason.code === "DAILY_GOAL")) last.reasons.push(goalReason(last.exerciseIds.length));
           last.reasons.push({ code: "DAILY_GOAL_REACHED", text: `Your daily goal of ${n(dailyGoal, "exercise")} is filled by the planned blocks, so no new material is added.`, data: { dailyGoal } });
         }
       }

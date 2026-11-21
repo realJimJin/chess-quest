@@ -22,9 +22,9 @@ type Tone = "good" | "bad" | "info" | "warn";
 const TONE: Record<Tone, string> = { good: "border-good/40 bg-good/10 text-good", bad: "border-bad/40 bg-bad/10 text-bad", info: "border-line bg-panel2 text-ink", warn: "border-warn/40 bg-warn/10 text-warn" };
 const fmt = (ms: number) => { const s = Math.max(0, Math.floor(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
 
-interface Props { ex: Exercise; mode: Mode; position: string; onNext: () => void; onRecorded: (attempt: Attempt) => void; autoAdvance: boolean; sessionStart: number; showSessionTimer: boolean }
+interface Props { ex: Exercise; mode: Mode; position: string; onNext: () => void; onRecorded: (attempt: Attempt) => void; autoAdvance: boolean; sessionStart: number; showSessionTimer: boolean; practice?: boolean; onRetry?: () => void }
 
-export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdvance, sessionStart, showSessionTimer }: Props) {
+export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdvance, sessionStart, showSessionTimer, practice = false, onRetry }: Props) {
   const { addAttempt, amendAttempt, library } = useApp();
   const solver = ex.sideToMove;
   const deep = mode === "deep";
@@ -77,12 +77,12 @@ export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdv
     const timeMs = thinkMs.current ?? ts - start.current;
     const base = { exerciseId: ex.id, ts, mode, result: res, timeMs, wrongMoves: wrong.current, offBookMoves: offBook.current, hintLevel: usedHint.current, finished: !revealed.current, deep: deepRec };
     const attempt = { ...base, findings: res === "solved" ? [] : diagnose(ex, base).findings };
-    addAttempt(attempt);
-    onRecorded(attempt);
-    setXp(xpFor(base, ex.difficulty.value, mode === "review"));
+    // A retry keeps the first graded attempt, review schedule, and session total intact.
+    if (!practice) { addAttempt(attempt); onRecorded(attempt); }
+    setXp(practice ? 0 : xpFor(base, ex.difficulty.value, mode === "review"));
     setRecorded(attempt);
     setView((v) => ({ ...v }));
-  }, [addAttempt, ex, mode, onRecorded]);
+  }, [addAttempt, ex, mode, onRecorded, practice]);
 
   const grade = useCallback((): Result => (revealed.current || wrong.current.length ? "failed" : usedHint.current > 0 ? "assisted" : "solved"), []);
 
@@ -182,6 +182,7 @@ export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdv
       if (t?.closest("input, textarea, select, [role='textbox'], [contenteditable]:not([contenteditable='false'])")) return;
       if (["Enter", " ", "ArrowRight"].includes(e.key) && t?.closest("button, a, [role='button']")) return;
       if (result && (e.key === "Enter" || e.key === " " || e.key === "ArrowRight" || e.key === "n")) { e.preventDefault(); onNext(); }
+      else if (result && result !== "solved" && e.key === "r" && onRetry) { e.preventDefault(); onRetry(); }
       else if (!result && e.key === "h" && phase === "play") showHint();
       else if (e.key === "f") setFlip((f) => !f);
     };
@@ -197,7 +198,7 @@ export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdv
   const toggleTag = (c: Category) => {
     const next = tags.includes(c) ? tags.filter((x) => x !== c) : [...tags, c];
     setTags(next);
-    if (attemptTs.current !== null && result) {
+    if (attemptTs.current !== null && result && !practice) {
       const base = { result, timeMs: recorded?.timeMs ?? 0, deep: recorded?.deep, selfReport: next, wrongMoves: wrong.current, mode };
       amendAttempt(ex.id, attemptTs.current, { selfReport: next, findings: diagnose(ex, base).findings });
     }
@@ -238,7 +239,7 @@ export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdv
           <div className="mt-3 flex items-center justify-between gap-2">
             <div className={`min-h-9 flex-1 rounded-lg border px-3 py-1.5 text-sm ${feedback ? TONE[feedback.tone] : "border-transparent text-mute"}`} data-testid="feedback" role="status" aria-live="polite">{feedback?.text ?? ""}</div>
             {!result ? <><button className="btn btn-ghost" onClick={showHint}>Hint</button><button className="btn btn-ghost" onClick={giveUp}>Solution</button></>
-              : <button className="btn btn-primary" data-testid="next" onClick={onNext} autoFocus>Next →</button>}
+              : <>{result !== "solved" && onRetry && <button className="btn" data-testid="retry" onClick={onRetry}>Try again</button>}<button className="btn btn-primary" data-testid="next" onClick={onNext} autoFocus>Next →</button></>}
           </div>
         )}
         {minimal && result && <p className="mt-2 font-mono text-sm text-mute" data-testid="solution">{formatSolution(ex.fen, ex.solution)}</p>}
@@ -298,8 +299,9 @@ export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdv
                   </div>
                 </div>
               )}
-              <p className={styles.savedNote} data-testid="saved-note">Recorded in your session{recorded?.finished === false ? "" : " · counts on your map"}</p>
-              <div className="flex gap-2">
+              <p className={styles.savedNote} data-testid="saved-note">{practice ? "Practice retry — your first attempt remains on record" : <>Recorded in your session{recorded?.finished === false ? "" : " · counts on your map"}</>}</p>
+              <div className="flex flex-wrap gap-2">
+                {result !== "solved" && onRetry && <button className="btn" data-testid="retry" onClick={onRetry}>Try again</button>}
                 <button className="btn btn-primary flex-1" data-testid="next" onClick={onNext} autoFocus>Next exercise →</button>
                 <Link className="btn" href={`/partner?id=${encodeURIComponent(ex.id)}`}>Discuss</Link>
               </div>

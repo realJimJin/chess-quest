@@ -15,9 +15,9 @@
 .sectionTitle h2 { font: 25px var(--font-display); }
 .sectionTitle > span { color: var(--color-mute); font-size: 10px; }
 .sessions { display: flex; flex-direction: column; gap: 16px; }
-.session { padding: 24px; background: linear-gradient(120deg, #202630, #17382e); border: 1px solid var(--color-line); border-radius: 10px; }
+.session { padding: 24px; background: var(--color-panel); border: 1px solid var(--color-line); border-radius: 10px; }
 .sessionTop { display: flex; align-items: center; gap: 12px; margin-bottom: 19px; }
-.number { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #d7b97a40; border-radius: 50%; color: var(--color-accent); font-size: 9px; }
+.number { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #d5bd8740; border-radius: 50%; color: var(--color-accent); font-size: 9px; }
 .minutes { margin-left: auto; color: var(--color-mute); font-size: 11px; white-space: nowrap; }
 .session h3 { font: 26px/1.25 var(--font-display); margin-bottom: 10px; }
 .session > p { color: var(--color-mute); font-size: 11px; line-height: 1.8; }
@@ -27,7 +27,7 @@
 .reasons li { padding-left: 12px; border-left: 1px solid var(--color-line); }
 .session > button { width: 100%; }
 .sidebar { display: flex; flex-direction: column; gap: 25px; }
-.basis { padding: 24px; background: #d7b97a06; border: 1px solid #d7b97a30; border-radius: 10px; }
+.basis { padding: 24px; background: #d5bd8706; border: 1px solid #d5bd8730; border-radius: 10px; }
 .basis h2 { font: 26px var(--font-display); margin: 12px 0 16px; }
 .basis p { color: var(--color-mute); font-size: 12px; line-height: 1.9; margin: 12px 0; }
 .basis a { display: flex; align-items: center; gap: 10px; color: var(--color-accent); font-size: 11px; margin-top: 20px; line-height: 1.7; }

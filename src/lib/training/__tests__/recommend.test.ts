@@ -72,6 +72,7 @@ function scenarios(): Record<string, TrainingInput> {
     observedTimes: input({ attempts: [...tries(d6.slice(0, 12), 9, { timeMs: 90000 }), ...tries(d6.slice(12, 18), 5, { mode: "deep", timeMs: 600000 })] }),
     allCleared: input({ exercises: d6.slice(0, 6), attempts: tries(d6.slice(0, 6), 6) }),
     tinyGoal: input({ profile: profile({ dailyGoal: 2 }), srs: srsDue, attempts: mixedFindings }),
+    goalFilledByReview: input({ profile: profile({ dailyGoal: 1 }), srs: srsDue }),
     noAllocation: input({ profile: profile({ allocation: [] }) }),
     goalsAndRepertoire: input({
       exercises: [...LIB, ...chapter("rep", 3, 6, 1, { chapter: { id: "inv-gambit", title: "Invented Gambit lines" } }), ...chapter("mates", 2, 6, 1, { goal: "mate in two" })],
@@ -283,6 +284,9 @@ describe("gaps, minutes and bounds", () => {
     expect(byArea(longer)).toEqual({ games: 36, calculation: 30, positional: 24, endgames: 18, repertoire: 12 });
     const withReviews = recommendTraining(scenarios().reviews);              // 90 min, 18 of them on reviews
     expect(byArea(withReviews)).toEqual({ games: 22, calculation: 18, positional: 14, endgames: 11, repertoire: 7 });
+    const filled = recommendTraining(scenarios().goalFilledByReview);
+    expect(allIds(filled)).toEqual([LIB[0].id]);
+    expect(reason(filled, "DAILY_GOAL_REACHED")?.data).toMatchObject({ dailyGoal: 1 });
     for (const [name, s] of Object.entries(scenarios())) {
       const out = recommendTraining(s);
       expect(out.blocks.reduce((sum, b) => sum + b.minutes, 0), name).toBe(out.evidence.sessionMinutes);
@@ -295,6 +299,9 @@ describe("gaps, minutes and bounds", () => {
     expect(allIds(tiny)).toHaveLength(2);
     expect(tiny.blocks[0]).toMatchObject({ kind: "due_review", exerciseIds: [LIB[0].id] });
     expect(tiny.blocks.flatMap((b) => b.reasons).some((x) => x.code === "DAILY_GOAL")).toBe(true);
+    const filled = recommendTraining(scenarios().goalFilledByReview);
+    expect(allIds(filled)).toEqual([LIB[0].id]);
+    expect(reason(filled, "DAILY_GOAL_REACHED")?.data).toMatchObject({ dailyGoal: 1 });
     for (const [name, s] of Object.entries(scenarios())) {
       const out = recommendTraining(s);
       expect(allIds(out).length, name).toBeLessThanOrEqual(out.evidence.dailyGoal);
@@ -324,6 +331,9 @@ describe("library safety", () => {
     expect(allIds(r).filter((id) => bad.has(id) || !known.has(id))).toEqual([]);
     expect(r.evidence.dueReviewsSkipped).toBe(3);
     expect(block(r, "new_material")!.exerciseIds.every((id) => !bad.has(id))).toBe(true);
+    const filled = recommendTraining(scenarios().goalFilledByReview);
+    expect(allIds(filled)).toEqual([LIB[0].id]);
+    expect(reason(filled, "DAILY_GOAL_REACHED")?.data).toMatchObject({ dailyGoal: 1 });
     for (const [name, s] of Object.entries(scenarios())) {
       const ok = new Set(s.exercises.filter((e) => e.trainable).map((e) => e.id));
       expect(allIds(recommendTraining(s)).filter((id) => !ok.has(id)), name).toEqual([]);
@@ -356,6 +366,9 @@ describe("library safety", () => {
 
 describe("determinism and purity", () => {
   it("same input twice gives deep-equal, JSON-serialisable output and leaves the input untouched", () => {
+    const filled = recommendTraining(scenarios().goalFilledByReview);
+    expect(allIds(filled)).toEqual([LIB[0].id]);
+    expect(reason(filled, "DAILY_GOAL_REACHED")?.data).toMatchObject({ dailyGoal: 1 });
     for (const [name, s] of Object.entries(scenarios())) {
       const before = JSON.stringify(s);
       const a = recommendTraining(s), b = recommendTraining(s);

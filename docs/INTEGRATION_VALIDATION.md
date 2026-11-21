@@ -1,5 +1,8 @@
 # Core and redesign integration — November 20, 2026
 
+Latest increment: [Figma Make skin and current core validation](FIGMA_MAKE_INTEGRATION.md).
+The record below describes the earlier integration baseline.
+
 Branch: `codex/integration-core-redesign`. Do not merge to `main` or release.
 
 ## Sources and ownership

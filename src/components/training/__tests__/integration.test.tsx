@@ -16,6 +16,8 @@ import LibraryExperience from "../../LibraryExperience";
 import TrainingPlan from "../TrainingPlan";
 import TrainPage from "../../../app/train/page";
 import Shell from "../../Shell";
+import Campaign from "../../Campaign";
+import BattlePreview from "../../battles/BattlePreview";
 
 const navigation = vi.hoisted(() => ({ query: new URLSearchParams(), pathname: "/", push: vi.fn() }));
 vi.mock("next/navigation", () => ({ usePathname: () => navigation.pathname, useSearchParams: () => navigation.query, useRouter: () => ({ push: navigation.push }) }));
@@ -75,6 +77,47 @@ describe("redesign and core integration", () => {
     expect((await loadLibrary()).samples.exercises).toHaveLength(8);
     expect(readProgress().attempts).toHaveLength(0);
   });
+  it("opens the selected private chapter and keeps imported data after filtering the Figma library", async () => {
+    const book = { ...SAMPLE_PACK.book, id: "private-study", title: "My private exercises", author: "Study notes" };
+    const exercises = SAMPLE_PACK.exercises.slice(0, 2).map((ex, i) => ({ ...ex, id: `private-${i}`, bookId: book.id }));
+    await saveLibrary({ [book.id]: { book, exercises, importedAt: 1 } });
+    await mount(<LibraryExperience />);
+    await userEvent.click(screen.getByRole("button", { name: "My imports" }));
+    await userEvent.type(screen.getByRole("textbox", { name: "Search your library" }), "private exercises");
+    await userEvent.click(screen.getByRole("button", { name: /^Calculate/ }));
+    expect(navigation.push).toHaveBeenCalledWith(`/train?book=private-study&mode=deep&chapter=${exercises[0].chapter.id}`);
+    expect((await loadLibrary())[book.id].exercises).toEqual(exercises);
+    expect(readProgress().attempts).toHaveLength(0);
+  });
+  it("maps real level locks and opens the selected level after explicit free roam", async () => {
+    const exercises = Array.from({ length: 30 }, (_, i) => ({ ...SAMPLE_PACK.exercises[i % 8], id: `map-${i}`, number: i+1 }));
+    await saveLibrary({ samples: { book: SAMPLE_PACK.book, exercises, importedAt: 1 } });
+    saveProfile({ ...DEFAULT_PROFILE, freeRoam: false });
+    await mount(<Campaign />);
+    expect((await screen.findByTestId("level-1")).getAttribute("data-state")).toBe("locked");
+    await userEvent.click(screen.getByTestId("level-1"));
+    expect(screen.queryByTestId("level-flow")).toBeNull();
+    await userEvent.click(screen.getByRole("checkbox", { name: /Free roam/ }));
+    await userEvent.click(await screen.findByTestId("level-flow"));
+    expect(navigation.push).toHaveBeenCalledWith(`/train?mode=flow&level=${encodeURIComponent(`samples:${exercises[0].chapter.id}:2`)}&book=samples`);
+    expect(readProgress().attempts).toHaveLength(0);
+  });
+  it("keeps battle previews read-only and launches the chosen calculation position in the real trainer", async () => {
+    await mount(<BattlePreview />);
+    expect((await screen.findByTestId("board")).getAttribute("data-interactive")).toBe("false");
+    await userEvent.click(screen.getByRole("button", { name: "Collection" }));
+    await userEvent.click(screen.getByRole("button", { name: /Calculation Duel/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Preview the lobby/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Preview the match/ }));
+    await userEvent.type(screen.getByRole("textbox", { name: /Your calculation/ }), "Scratch analysis");
+    expect(readProgress().attempts).toHaveLength(0);
+    expect(await loadLibrary()).toEqual({});
+    await userEvent.click(screen.getByRole("button", { name: /Practice this position solo/ }));
+    const expected = SAMPLE_PACK.exercises.find(ex => ex.solution.some(n => n.children.length > 0))!;
+    await waitFor(() => expect(navigation.push).toHaveBeenCalledWith(`/train?mode=deep&id=${expected.id}&book=samples`));
+    expect((await loadLibrary()).samples.exercises).toHaveLength(8);
+    expect(readProgress().attempts).toHaveLength(0);
+  });
   it("solves through typed moves, persists once, and reports the actual session result", async () => {
     await seedSamples(); setRoute({ id: "samples-0001", mode: "flow" });
     await mount(<TrainPage />);
@@ -83,6 +126,22 @@ describe("redesign and core integration", () => {
     await screen.findByText("Nicely calculated.");
     expect(readProgress().attempts).toHaveLength(1);
     expect(readProgress().attempts[0]).toMatchObject({ exerciseId: "samples-0001", result: "solved", finished: true });
+    await userEvent.click(screen.getByTestId("next"));
+    expect(await screen.findByText("You worked through 1 exercise. Take a moment to consider what you noticed.")).toBeTruthy();
+  });
+  it("keeps a failed first attempt and review schedule when a practice retry is solved", async () => {
+    await seedSamples(); setRoute({ id: "samples-0001", mode: "flow" });
+    await mount(<TrainPage />);
+    await userEvent.click(await screen.findByTestId("giveup"));
+    await userEvent.click(screen.getByTestId("tag-calculation"));
+    const original = readProgress();
+    await userEvent.click(screen.getByTestId("retry"));
+    await userEvent.type(await screen.findByTestId("move-notation"), "Rd8#");
+    await userEvent.click(screen.getByRole("button", { name: "Play move" }));
+    await screen.findByText("Nicely calculated.");
+    expect(readProgress()).toEqual(original);
+    expect(screen.getByTestId("xp").textContent).toBe("+0 XP");
+    expect(screen.getByTestId("saved-note").textContent).toMatch(/first attempt remains/);
     await userEvent.click(screen.getByTestId("next"));
     expect(await screen.findByText("You worked through 1 exercise. Take a moment to consider what you noticed.")).toBeTruthy();
   });

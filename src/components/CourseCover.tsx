@@ -1,10 +1,5 @@
-import QuestIcon from "./QuestIcon";
+/* eslint-disable @next/next/no-img-element */
 export default function CourseCover({ title, author, original = false }: { title: string; author: string; original?: boolean }) {
-  return <div className={`course-cover ${original ? "cover-original" : "cover-imported"}`} aria-hidden="true">
-    <div className="cover-rule" /><div className="cover-imprint">{original ? "CHESS QUEST ORIGINALS" : "YOUR CHESS LIBRARY"}</div>
-    <div className="cover-emblem"><div /><QuestIcon name="knight" /><div /></div>
-    <div className="cover-title">{original ? <>The Starter<br />Collection</> : title}</div>
-    <div className="cover-subtitle">{original ? "A STUDY IN CHECKMATE" : author}</div>
-    <div className="cover-bottom">{original ? "EIGHT ORIGINAL POSITIONS" : "PERSONAL EDITION"}<span>◆</span></div>
-  </div>;
+  if (original) return <img className="course-cover" src="/art/figma-make/starter-cover.svg" width="240" height="324" alt="The Starter Collection by Chess Quest" />;
+  return <div className="course-cover cover-imported" aria-hidden="true"><span className="cover-imprint">YOUR CHESS LIBRARY</span><strong>{title}</strong><span className="cover-author">{author}</span><span className="cover-bottom">PRIVATE COLLECTION</span></div>;
 }

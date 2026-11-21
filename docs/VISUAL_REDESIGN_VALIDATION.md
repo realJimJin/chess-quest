@@ -1,5 +1,8 @@
 # Scholar’s Atlas redesign — November 21, 2026
 
+Historical: this skin was replaced by the user-approved Figma AI export.
+See [current implementation and validation](FIGMA_MAKE_INTEGRATION.md).
+
 Branch: `codex/integration-core-redesign`. Review against `codex/visual-redesign`.
 Do not merge to `main` or promote this preview to production.
 
