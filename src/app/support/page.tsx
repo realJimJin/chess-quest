@@ -1,6 +1,6 @@
 export const metadata = { title: "Support — Chess Quest" };
 const REPOSITORY = "https://github.com/realJimJin/chess-quest";
-const SOURCE = process.env.NEXT_PUBLIC_TARGET === "ios" ? `${REPOSITORY}/tree/v1.0.1-build4` : REPOSITORY;
+const SOURCE = process.env.NEXT_PUBLIC_TARGET === "ios" ? `${REPOSITORY}/tree/v1.0.1-build5` : REPOSITORY;
 const EMAIL =process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "jimjin135@gmail.com";
 
 export default function Support() {
@@ -8,6 +8,7 @@ export default function Support() {
     <article className="mx-auto flex max-w-2xl flex-col gap-4 text-sm leading-relaxed">
       <h1 className="text-2xl font-semibold tracking-tight">Support</h1>
       <h2 className="mt-2 text-lg font-semibold">Getting started</h2>
+      <p>To learn openings, open Openings, choose the five-day preparation plan, and tap “Train day 1”. Use “Play demonstration” to watch the moves and read the explanations, then “Practice this line” to play them yourself. Tap a piece and its destination; your opponent replies automatically.</p>
       <p>Open Library and tap “Start studying” in The Starter Collection to play eight original puzzles straight away. To train from your own book, open Library, choose Import, and load an exercise file.</p>
       <h2 className="mt-2 text-lg font-semibold">Common questions</h2>
       <p><strong>My progress is missing on another device.</strong> Progress is stored per device and per browser. It does not sync.</p>
