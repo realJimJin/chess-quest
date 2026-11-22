@@ -26,7 +26,7 @@ export function AccountCard() {
   if (!s.configured) return null;
   if (!s.user) return (
     <section className="card flex flex-wrap items-center justify-between gap-3 p-5">
-      <div><h2 className="font-semibold">Account</h2><p className="mt-1 text-sm text-mute">Sign in to keep your attempts, review queue and profile in step across devices. What is already on this device is added to your account.</p></div>
+      <div><h2 className="font-semibold">Account</h2><p className="mt-1 text-sm text-mute">Sign in to keep your attempts, review queue and profile in step across devices. This browser keeps its saved work linked to the first account it syncs with. Use a separate browser profile for another account.</p></div>
       <a href="/auth/login?returnTo=%2Fprofile" className="btn">Sign in</a>
     </section>
   );

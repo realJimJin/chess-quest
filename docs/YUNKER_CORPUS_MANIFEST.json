@@ -1,0 +1,652 @@
+{
+  "checked": "2026-11-22",
+  "games": 1059,
+  "bySide": {
+    "black": 529,
+    "white": 530
+  },
+  "bySource": {
+    "online": 973,
+    "tournament": 86
+  },
+  "byTimeClass": {
+    "blitz": 526,
+    "bullet": 365,
+    "classical": 13,
+    "daily": 79,
+    "rapid": 55,
+    "unspecified": 21
+  },
+  "excluded": [
+    {
+      "reason": "Duplicate game"
+    },
+    {
+      "source": "https://www.chess.com/game/live/65466828421",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/65467287457",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/65625726099",
+      "reason": "Ambiguous player, nonstandard position, or fewer than two moves"
+    },
+    {
+      "source": "https://www.chess.com/game/live/65728294523",
+      "reason": "Ambiguous player, nonstandard position, or fewer than two moves"
+    },
+    {
+      "source": "https://www.chess.com/game/live/108891072803",
+      "reason": "Ambiguous player, nonstandard position, or fewer than two moves"
+    },
+    {
+      "source": "https://www.chess.com/game/live/109072819835",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/109072887419",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/109073382345",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/daily/654421227",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/111065431599",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/111070810907",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/111070874879",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/daily/702407441",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/daily/718080997",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/daily/722534019",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/133375758439",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/138237045477",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/daily/882139285",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/daily/878318405",
+      "reason": "PGN parse failure",
+      "detail": "Invalid move in PGN: Re1+"
+    },
+    {
+      "source": "https://www.chess.com/game/live/145296529922",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/145296712408",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/145296747910",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/145296797060",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/145296833824",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/145296867364",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/145296925280",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/daily/887571275",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/daily/891305655",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/147028393630",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/147028450300",
+      "reason": "Nonstandard chess variant"
+    },
+    {
+      "source": "https://www.chess.com/game/live/147028513096",
+      "reason": "Nonstandard chess variant"
+    }
+  ],
+  "files": [
+    {
+      "file": "broadcasts/13LLgXZ8.pgn",
+      "sha256": "46b6101420ff4e43548aaca139f699d70ccfc5966f931fe221a502428b9556e1"
+    },
+    {
+      "file": "broadcasts/2YZ96nTj.pgn",
+      "sha256": "137f86c62d5631a6065dca92bb978e7a6d024b2bce5fca2469d475647fbf260d"
+    },
+    {
+      "file": "broadcasts/4LIsSWXX.pgn",
+      "sha256": "6b0c832f1c0b71ca820e7be81950dfe10ecb7c9d40d63c514ba063d924655fc1"
+    },
+    {
+      "file": "broadcasts/4qIOlAgv.pgn",
+      "sha256": "05d3b7d18e5ee97bc39e7452893d6c0d4e052eb16e0b57036a0b9c86454f20fd"
+    },
+    {
+      "file": "broadcasts/4wok0lhf.pgn",
+      "sha256": "a04183b3fe481224674cfe59bfccadf35407915dbdff1c1d81216be514c90eff"
+    },
+    {
+      "file": "broadcasts/5BUi5ia2.pgn",
+      "sha256": "45e9ac0ed14988b38785e05440b8348e5af3267f2739c4f0e742539fcff2911c"
+    },
+    {
+      "file": "broadcasts/5rxgM8h6.pgn",
+      "sha256": "5f77091e80923673011ce40d7c5d918e95268524b91f806a77dd264c62b51c85"
+    },
+    {
+      "file": "broadcasts/6uohjndM.pgn",
+      "sha256": "ba009988fec08c4fd0de3fe77efb7d103ff2840f8c3ed35f27aadf8470013c5d"
+    },
+    {
+      "file": "broadcasts/7GBA9kgJ.pgn",
+      "sha256": "183d59c22e34b7f0f6a5c13200dabcc33076f2727cdfffdf287ee8da1d382604"
+    },
+    {
+      "file": "broadcasts/8PRpTMvN.pgn",
+      "sha256": "693dc57993d51a80e9e28d1fa85fd14bb2dcd99fe023762f9bb2b52a2b156261"
+    },
+    {
+      "file": "broadcasts/8sogXHQz.pgn",
+      "sha256": "f719ba1902ce3850cb86061e702317e85e2f195247c8e7349f8a2588b33bb52d"
+    },
+    {
+      "file": "broadcasts/9Ylh71Id.pgn",
+      "sha256": "712882f7f24b2f3c7b92c40cf2a6f54d84838cf37733f000ec2c02a45e3ae490"
+    },
+    {
+      "file": "broadcasts/Ank7Rdzq.pgn",
+      "sha256": "7700c6f67ef3ec79eb14187915644c2554c1fcf2c100c8f0e4e98cecb3ccd7fe"
+    },
+    {
+      "file": "broadcasts/BRsVEw4F.pgn",
+      "sha256": "5b081ee3f03c9cddde2ef89614c20b799abbabdfb26ee9beb4cd3b32ccbbc0c2"
+    },
+    {
+      "file": "broadcasts/CFK2WepI.pgn",
+      "sha256": "609be6d6b1739fbd44269c87742e492f7cf49d97347e022f5356460ef91636cf"
+    },
+    {
+      "file": "broadcasts/EToNDQv4.pgn",
+      "sha256": "568ecfc479bd23b1b7f619d98748fcad16dd3e41114a9d7ff2c68a84bae80597"
+    },
+    {
+      "file": "broadcasts/FHjMJlgO.pgn",
+      "sha256": "564dde0367146f113f7ad82f7f6dd1e4439d6a07b05abaf709b225e5a8a517ca"
+    },
+    {
+      "file": "broadcasts/FKVFubEa.pgn",
+      "sha256": "6a26541912b719141912897167ed60dd75e271f4f19edcd6c6710b764a92deb9"
+    },
+    {
+      "file": "broadcasts/FnOTAhKj.pgn",
+      "sha256": "093bf4650adae44594775ac6bb86a970133a34d421502ebd554a3b62c354dc53"
+    },
+    {
+      "file": "broadcasts/FwByNtVd.pgn",
+      "sha256": "59ffa4de6ec3a8eea62d90215da2bcfa605c77a3748ebcbb23e151526550ca87"
+    },
+    {
+      "file": "broadcasts/GTJg30Yj.pgn",
+      "sha256": "5b4dce98256bbb9b46ed6cd0b05cfc5120f395d4b94a62eb784cc6734fa1b77a"
+    },
+    {
+      "file": "broadcasts/H1vdOhPD.pgn",
+      "sha256": "aff211693d5c3ccc76db710d773f76c8a9c30404686a3fb89bd945c87a9db526"
+    },
+    {
+      "file": "broadcasts/H7OXBjET.pgn",
+      "sha256": "15e67ff9389779af3fb74eddcf5ed2f6c42a9f85ff346269c43666b7a39fab31"
+    },
+    {
+      "file": "broadcasts/HNc4gMBa.pgn",
+      "sha256": "ea833dc4aae84167a68c147bf0e195fe9a5ae5998ebd78cd55fe0c4f2debab3f"
+    },
+    {
+      "file": "broadcasts/Hv9Z0tAI.pgn",
+      "sha256": "329accb4f55b95c8f059fb7e3a350d98d8492498e7c7871cd173c0c3da96a677"
+    },
+    {
+      "file": "broadcasts/J6FS6G4s.pgn",
+      "sha256": "3b209df239074cf2402a45292e33a0611109ea37034edaa16b95733078124761"
+    },
+    {
+      "file": "broadcasts/JbbYaKG7.pgn",
+      "sha256": "c47aed8ad627aa0fb9ddb71d6d3ae32a1ae29216e89991997159fcff53d8c6ae"
+    },
+    {
+      "file": "broadcasts/JoWwYkO7.pgn",
+      "sha256": "120cd790395838db63edecab8250babbee79f2167bfbc2b7ea3c5deb8a824835"
+    },
+    {
+      "file": "broadcasts/K5IWNY8B.pgn",
+      "sha256": "ee35f8ebcfe5acf3b53a3e7a9cebb802d045035aeb93fc199e8b4a6913b2a6bf"
+    },
+    {
+      "file": "broadcasts/KfxIrV5v.pgn",
+      "sha256": "9a8cb0815e067fec7cd058fba15fa18b95752438595d3e21e1e41e43bc3c20c5"
+    },
+    {
+      "file": "broadcasts/LQYWQ58L.pgn",
+      "sha256": "a78cc3f47f4cf53b95b5032a34d7f61d64627d98f36a1cbde876075b9179e4d0"
+    },
+    {
+      "file": "broadcasts/LV8RRUqd.pgn",
+      "sha256": "7169070c4d1ca3734d22e0ccf755db6c98a1b1944c92127c4c354cf1223a6e04"
+    },
+    {
+      "file": "broadcasts/MWbcZiYv.pgn",
+      "sha256": "97e4a67c114e9252f76d9e8a032f35531446c1bd0ebe988288c504725ef379be"
+    },
+    {
+      "file": "broadcasts/N2jW2psG.pgn",
+      "sha256": "4830fe75e025ffe277271fa46c0aeb68bad96254e70e94298f83e73b4ddc7e0b"
+    },
+    {
+      "file": "broadcasts/NPAc8V5q.pgn",
+      "sha256": "461f3de0d718a752f7507ec63fd660a20dbc5bae1388cbcb6992a2c9ab53af47"
+    },
+    {
+      "file": "broadcasts/OLFVeaaf.pgn",
+      "sha256": "b8cdbdb0913a490825c6d82099b65dcff9583c35b0773d93362e771e272b36f9"
+    },
+    {
+      "file": "broadcasts/P33oIQQ9.pgn",
+      "sha256": "5b0cb16722a0405f31ccb48263c20b5f3193ed98c9740c1e1b4fc60aff42994a"
+    },
+    {
+      "file": "broadcasts/P66hoMdh.pgn",
+      "sha256": "dd21d390072a248494bc64507bdaec380948da01b38f3aced60bed6d47d86790"
+    },
+    {
+      "file": "broadcasts/PevpzAi8.pgn",
+      "sha256": "4e8b749f481e925963a2eb94c504527f555e1e8aa1088ca96a8c944d53bc59bc"
+    },
+    {
+      "file": "broadcasts/PnxV4kTk.pgn",
+      "sha256": "742d86e023334dd7653c2344b2926bf28c419e7bde201c690ffc5a46058cf95c"
+    },
+    {
+      "file": "broadcasts/ShcP38Wo.pgn",
+      "sha256": "638cdd1fa25d0e4bf8770406ad26f3c4cc5231ff9ecfb4197a7bd9d64c380d9e"
+    },
+    {
+      "file": "broadcasts/Shfs0BLf.pgn",
+      "sha256": "f3d805db0f47976ed05ce0cedcca85a5eb497400b9bbe5cc1c81c655f0dbe798"
+    },
+    {
+      "file": "broadcasts/Ta90boYf.pgn",
+      "sha256": "6ccbad9a0a5769771ab5f52f2620a18a9511c1814f095832e5c74e9dc38651f4"
+    },
+    {
+      "file": "broadcasts/We9uxUhN.pgn",
+      "sha256": "f4b9356a37328c4a9643cd6db3325ae5d4ce7f2b785fb32225888ba5585f2497"
+    },
+    {
+      "file": "broadcasts/YZ9T4Zyv.pgn",
+      "sha256": "fa280d41bfe0b5b05761791e5971dd8db76e8e42c4977b20bfd6f2d974eeaf1f"
+    },
+    {
+      "file": "broadcasts/YunwcKNH.pgn",
+      "sha256": "630ba6b13c9e8823bca4bad964b8ad31958c3e441cde3c46a863885771717178"
+    },
+    {
+      "file": "broadcasts/aId8dWvU.pgn",
+      "sha256": "9bbc909e78dbfd822e9b1c51385b959ee49ec75c8ce7a89501468c5c1df366f5"
+    },
+    {
+      "file": "broadcasts/bcFCJ5kB.pgn",
+      "sha256": "792c75db91a4bba3b0fa590bb542945f8fd3102e412dc2b8f39dec25c252c3a9"
+    },
+    {
+      "file": "broadcasts/beTBO88k.pgn",
+      "sha256": "3a16ba6589fd0f8e680bae5583007e17b79b55fa164ca92fc1c4d5a786686c84"
+    },
+    {
+      "file": "broadcasts/cZDWPSmm.pgn",
+      "sha256": "a87fa1bddcca7d54a9aac17a42ff473297accf6443f72c12a99f96608cdf59bf"
+    },
+    {
+      "file": "broadcasts/cZwCiPuj.pgn",
+      "sha256": "15ddb570cd6df2119495c30d276e069508452572430ccde10b9734812d2fb542"
+    },
+    {
+      "file": "broadcasts/dlrg5qb2.pgn",
+      "sha256": "0c806e3a7225f3826f074c59b2c5b660f56b77e9f8bf8c3124b825be0aa85816"
+    },
+    {
+      "file": "broadcasts/dm1as9H9.pgn",
+      "sha256": "42327e516a9eedbc99acc5f68fe98e0d1c0270e1ee658a3fb1ae2e96ec7e4f02"
+    },
+    {
+      "file": "broadcasts/etlglECL.pgn",
+      "sha256": "bb6eee0f902ae6dcfef9bf86de25920bca0eb4be3d4d4b20b279643f3151d2fb"
+    },
+    {
+      "file": "broadcasts/fNDEX84G.pgn",
+      "sha256": "90dc401eeb453569a83a7496124abb1d9696457c73a06cd4504cdcc135e64abc"
+    },
+    {
+      "file": "broadcasts/gV8VX30b.pgn",
+      "sha256": "a7fbce2b362890bf1128ab91fb1e3a54381384965eab3aa65fbf9f47ced788ce"
+    },
+    {
+      "file": "broadcasts/haCpmkYK.pgn",
+      "sha256": "e2b9076f7a5464d04091e05242d87d4d1ea3b175ddf0e178d4e96d9ce2b05999"
+    },
+    {
+      "file": "broadcasts/hb3TqTEQ.pgn",
+      "sha256": "5655e8279235fe2404222ecd18e9406d8419dc9788325a0235e2244c7c64b0f0"
+    },
+    {
+      "file": "broadcasts/hcZaeXEA.pgn",
+      "sha256": "e26d65b7cc3b650441daad20843b305a5d76261c9bfaa1dfa5759b3d7b993b50"
+    },
+    {
+      "file": "broadcasts/hqBYvYE3.pgn",
+      "sha256": "379ddc0aadf5120f742b7fbd2436de3317eb9e07658470d662dcf8ab09e1a94b"
+    },
+    {
+      "file": "broadcasts/iMfMq2Ne.pgn",
+      "sha256": "992018679163a5bacafed78b12ea7e14f4893f36c3137c8aa59b4184dc290874"
+    },
+    {
+      "file": "broadcasts/k4PucLCa.pgn",
+      "sha256": "a29453920ecd1384eb2055f70164d189128f24370709118d7bf219baa107d08b"
+    },
+    {
+      "file": "broadcasts/kIIZNLbK.pgn",
+      "sha256": "ecc5072c6f4429d714f5346514819782aaa120b1bf3edc6117e5af0bcffe9a94"
+    },
+    {
+      "file": "broadcasts/l0MwNiTB.pgn",
+      "sha256": "1aad560a4886f4afc013af1218585a56c3fb0fc5ad297970426840aac2850115"
+    },
+    {
+      "file": "broadcasts/n3NN7k03.pgn",
+      "sha256": "1159782dd580a55a4122941c4218c90a8f4283d0808dd11d6d22678906045c3a"
+    },
+    {
+      "file": "broadcasts/ngPpgd5b.pgn",
+      "sha256": "95eccbbee6cd0b446745f332264b4e9a112ba37f713a0ce55cd2200f5abd613d"
+    },
+    {
+      "file": "broadcasts/nok5WNgj.pgn",
+      "sha256": "0575f6776facfde3dad39818e6ca4d287c0f55526bdf9355a7d34471ea2569cf"
+    },
+    {
+      "file": "broadcasts/oyetEguQ.pgn",
+      "sha256": "7114736cccfb0f230ed14d940796b0dcc4014a925ac626a44b262f175688f931"
+    },
+    {
+      "file": "broadcasts/pJ1ciG9o.pgn",
+      "sha256": "c51a6309e1189ad53f6ce7218e5b6a93c9a948f8a09f7f31e249b3b705eb95db"
+    },
+    {
+      "file": "broadcasts/phKt2dsH.pgn",
+      "sha256": "6c58c3f9379b72a4cdc929222f6ad0c4d76c0fe4d3c8b97958860c72965c5827"
+    },
+    {
+      "file": "broadcasts/pmx02bjt.pgn",
+      "sha256": "7dd3d7c5cdbc87f02ab74c24b1b309debcf3f1f9ac77e0816363c62ed4dc6bd6"
+    },
+    {
+      "file": "broadcasts/pzJzygZA.pgn",
+      "sha256": "8aea20d5cfab896cce286fe820a428d4f28982bf2283999f249080b167493b22"
+    },
+    {
+      "file": "broadcasts/qSMpAUlb.pgn",
+      "sha256": "44a3739be790424783fd55f34730c51860328e648d2520576a4e6fd096923d81"
+    },
+    {
+      "file": "broadcasts/r90cCWoB.pgn",
+      "sha256": "a0c3311a0ab26d993ba3acc633f3fdb7de36ab679a82dc635f856707282befe4"
+    },
+    {
+      "file": "broadcasts/rQTL8wnu.pgn",
+      "sha256": "0792b03e88ea610fab66a0c42402db75b1184c40526b86b9aaec04513b7ff6cb"
+    },
+    {
+      "file": "broadcasts/tiQfVQWg.pgn",
+      "sha256": "2f396af57513456fb05c571464170b792e098bc77da23dd0d291c947b74e51db"
+    },
+    {
+      "file": "broadcasts/toRLfchX.pgn",
+      "sha256": "e02c28bf01293333cb2786cd1e0f551e5a00f7db9d742c03dd14fdb5fd5340a9"
+    },
+    {
+      "file": "broadcasts/uEDUDdvs.pgn",
+      "sha256": "419f0d64378fa62fca344301e683471488ca72401eb6d863a385bc6fc670e99f"
+    },
+    {
+      "file": "broadcasts/v33FHTBd.pgn",
+      "sha256": "c80751338cce34a92465fa4b3f3f64f25943d2dc44e30bd1b511595d423c3784"
+    },
+    {
+      "file": "broadcasts/vWdNh35c.pgn",
+      "sha256": "404fc2c312633ac00b76dc2adc371217333054e529a5bde76a8a80d4142d4061"
+    },
+    {
+      "file": "broadcasts/vsYHBvd1.pgn",
+      "sha256": "97251230bf5a89e09afa2d7d46b075c507df2c75ce7ba4e1b44b7ea5a9bf8654"
+    },
+    {
+      "file": "broadcasts/xLpFzJlC.pgn",
+      "sha256": "7b5d35dc86328fd327aaef65ec9d3f43dae6ef32cc60e87839bf5c2b3d312349"
+    },
+    {
+      "file": "broadcasts/xqqDD8Ze.pgn",
+      "sha256": "ca5754f112e7945b35b92b9c3d597761351b39047a61561b6e3c0636f760a672"
+    },
+    {
+      "file": "broadcasts/zdj7tySQ.pgn",
+      "sha256": "853243f512524b4b59bf41fdf009d385fb52cee85837605111018b4d577a443a"
+    },
+    {
+      "file": "broadcasts/ziCvH296.pgn",
+      "sha256": "118b570b59ac6b0d2c77d7b952dbaa16c7c8cd3b53eed84e6b2a9d2f9c5fdaed"
+    },
+    {
+      "file": "broadcasts/zpHJzK8s.pgn",
+      "sha256": "a53bf2e0cb0bf615d07f288860d82188d2dc2e845607e3b257cba9f1097d0f1c"
+    },
+    {
+      "file": "chesscom-archives/2022-12.json",
+      "sha256": "91bc949cd13cf1a611cb2803b19f71dd4297cb03e243ca166364d08fdd0b8c27"
+    },
+    {
+      "file": "chesscom-archives/2023-01.json",
+      "sha256": "518191b8268ad51eb3a735a5277d78775afd49ecad50f96139c96477befca530"
+    },
+    {
+      "file": "chesscom-archives/2023-02.json",
+      "sha256": "5d46003eea8a58075ba72e2d0e64309a403a5c87c974465c4839914a979e23b0"
+    },
+    {
+      "file": "chesscom-archives/2023-03.json",
+      "sha256": "113fd19e4579ad960f1468d5e5ddfc5fcf15c3dd5fce234d78f322ece89a3c33"
+    },
+    {
+      "file": "chesscom-archives/2023-04.json",
+      "sha256": "52e82598c77f7588e7644f5fd68867bef16f003248135ce0e6878e017f622be4"
+    },
+    {
+      "file": "chesscom-archives/2023-05.json",
+      "sha256": "adeb023c1399566148210d2618658f95c91337a09152196d37f61955b38968ee"
+    },
+    {
+      "file": "chesscom-archives/2023-06.json",
+      "sha256": "9011f2f89a4afa3dedb2c777b969152623dc41a03838b7eebdacf8b7a9bf2a59"
+    },
+    {
+      "file": "chesscom-archives/2023-08.json",
+      "sha256": "4719b4d904b5d5af6ca29705338fba37340e41b8cd4c60e8e0d9daa9a58c7f11"
+    },
+    {
+      "file": "chesscom-archives/2024-01.json",
+      "sha256": "42927860ac74a0c37508a1df0812a9cb5a0f297b27d23a64e4fbb83f72c5a169"
+    },
+    {
+      "file": "chesscom-archives/2024-02.json",
+      "sha256": "494bef141e41fa36032157e35e87b98453aef3526e7e77a0c852c0d27e743a54"
+    },
+    {
+      "file": "chesscom-archives/2024-03.json",
+      "sha256": "2ce4ceea3a55720abbe951f6fff034a868d398f756bf40f8cbe356e16d754536"
+    },
+    {
+      "file": "chesscom-archives/2024-04.json",
+      "sha256": "424ecdbf9598a26dda159cab7dfa9bdd600f9e8b1e9e9939fd4d26e92dcecabb"
+    },
+    {
+      "file": "chesscom-archives/2024-05.json",
+      "sha256": "65d688b1cdd493022a9eb7c5d234d8e396f393ad218b641d3779bdcfa80ac384"
+    },
+    {
+      "file": "chesscom-archives/2024-06.json",
+      "sha256": "9790641305197bc9a7ceb73066c0432292044654aacee5e098a8360df64a132b"
+    },
+    {
+      "file": "chesscom-archives/2024-07.json",
+      "sha256": "2900aa73f1aaa6349d728cfb939d52803420c14f5afe9a0b93b438a8be1a3986"
+    },
+    {
+      "file": "chesscom-archives/2024-08.json",
+      "sha256": "d8794ebff6b5ee72837bae03e6462039724cac9cd37e317d74158b256899fcac"
+    },
+    {
+      "file": "chesscom-archives/2024-09.json",
+      "sha256": "89eb6b40fd9c295525a813b0d4730cfe9f66d9e59ff345da0b81da04895fb391"
+    },
+    {
+      "file": "chesscom-archives/2024-10.json",
+      "sha256": "c76bc6f010cd3eebf91a54686464677b71e707024f199fda6df581cdd46a60c5"
+    },
+    {
+      "file": "chesscom-archives/2024-11.json",
+      "sha256": "67033b3ad8dcb4be86240a0feca31b07b1032c396374d64c905f9b94a38d7a10"
+    },
+    {
+      "file": "chesscom-archives/2024-12.json",
+      "sha256": "8c41deca5def9ddc0cd33f3b0e07236b661b9be704408c189583572e5dbf073f"
+    },
+    {
+      "file": "chesscom-archives/2025-01.json",
+      "sha256": "71bc15d11613894136161f1998fc9d11462e3fe3ce0f83ce97c29419a1922ec0"
+    },
+    {
+      "file": "chesscom-archives/2025-02.json",
+      "sha256": "eac86cf44e4bb5e07e1e28764940dd58c5664984b9209374ae4b87caa4fd3160"
+    },
+    {
+      "file": "chesscom-archives/2025-03.json",
+      "sha256": "1805db3a19f2ae30d7fe847f2fb1d0af1b33e87a5943739e0af91f2c7912324b"
+    },
+    {
+      "file": "chesscom-archives/2025-04.json",
+      "sha256": "cfcf74622ef7443bb4258db281752d22e6900a48fd6b6787fc29888c1a77f842"
+    },
+    {
+      "file": "chesscom-archives/2025-05.json",
+      "sha256": "fbbdef07cc16db28e1541662bccba6f2c4508393ae2d4631ad0e71df22651ff4"
+    },
+    {
+      "file": "chesscom-archives/2025-08.json",
+      "sha256": "10f41e5d04b282c2ae559046369eba27ded3cbe8c66b4a72cd9851e52eb0f31d"
+    },
+    {
+      "file": "chesscom-archives/2025-09.json",
+      "sha256": "43c248b21736b78dfbc89f355f68a351f7878b899a05bd936fdd3fef2553e51b"
+    },
+    {
+      "file": "chesscom-archives/2025-10.json",
+      "sha256": "4881f94eaa5c6877b1b03c67cc53995cf81b2392b58229cf6eb1c429b5951d14"
+    },
+    {
+      "file": "chesscom-archives/2025-11.json",
+      "sha256": "1a160f32792a634790c55f609475cda0a1afbb3287f9b90fbbae544908c2053c"
+    },
+    {
+      "file": "chesscom-archives/2025-12.json",
+      "sha256": "5ff47a7f8141d6c055d65372f3b57bbef47020d890cdfdab44804d77556a9720"
+    },
+    {
+      "file": "chesscom-archives/2026-01.json",
+      "sha256": "d2abecbcfc098d907fa3529831ba8effc80f94bf34cdd19b43fb2e992b905ec0"
+    },
+    {
+      "file": "chesscom-archives/2026-02.json",
+      "sha256": "f9642440547f360910aeb1ab9579459594bd313c0473509d88f89f1f580f45d6"
+    },
+    {
+      "file": "chesscom-archives/2026-03.json",
+      "sha256": "f594664e3cc19d4e241acf7854acce2ec357153db6981efe063e00683fe4b9b0"
+    },
+    {
+      "file": "chesscom-archives/2026-04.json",
+      "sha256": "b84c55d9514d5e66ba3129c87b145eab8b46506a81cd6be9d6432e77b8b58933"
+    },
+    {
+      "file": "chesscom-archives/2026-05.json",
+      "sha256": "2550a8179bf2536bec4c3765fe9f4a81793c60680c6670736f1c09534d5cb9e4"
+    },
+    {
+      "file": "chesscom-archives/2026-08.json",
+      "sha256": "b9ef2fc578c8a6fcbd23af76b1d8b0775fd005a015b464e8f30b49c3ad06758b"
+    },
+    {
+      "file": "chesscom-archives/2026-09.json",
+      "sha256": "f390806b90052c74b9e986c83b2a3ef3ea341da1c639ed9a24be59cb3880040e"
+    },
+    {
+      "file": "chesscom-archives/2026-10.json",
+      "sha256": "2386f3e1f2b33a4b8320395cb77973a0eb765d8ce6effc3ec38108931bd377e0"
+    },
+    {
+      "file": "chesscom-archives/2026-11.json",
+      "sha256": "2f3b5e852fd42396ac8418df0a6cd0399b7f76b1a138c54eacd59da988a421bb"
+    }
+  ]
+}
