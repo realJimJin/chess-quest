@@ -17,9 +17,11 @@ type Tone = "good" | "bad" | "info" | "warn";
 const TONE: Record<Tone, string> = { good: "border-good/40 bg-good/10 text-good", bad: "border-bad/40 bg-bad/10 text-bad", info: "border-line bg-panel2 text-ink", warn: "border-warn/40 bg-warn/10 text-warn" };
 const fmt = (ms: number) => { const s = Math.max(0, Math.floor(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
 
-interface Props { ex: Exercise; mode: Mode; position: string; onNext: () => void; autoAdvance: boolean; sessionStart: number; showSessionTimer: boolean }
+interface Props { ex: Exercise; mode: Mode; position: string; onNext: () => void; autoAdvance: boolean; sessionStart: number; showSessionTimer: boolean;
+  /** A retry of an exercise already attempted: played for practice, never recorded. */
+  practice?: boolean; onRetry?: () => void }
 
-export default function Runner({ ex, mode, position, onNext, autoAdvance, sessionStart, showSessionTimer }: Props) {
+export default function Runner({ ex, mode, position, onNext, autoAdvance, sessionStart, showSessionTimer, practice = false, onRetry }: Props) {
   const { addAttempt, amendAttempt } = useApp();
   const solver = ex.sideToMove;
   const deep = mode === "deep";
@@ -65,11 +67,12 @@ export default function Runner({ ex, mode, position, onNext, autoAdvance, sessio
     attemptTs.current = ts;
     const timeMs = thinkMs.current ?? ts - start.current;
     const base = { exerciseId: ex.id, ts, mode, result: res, timeMs, wrongMoves: wrong.current, offBookMoves: offBook.current, hintLevel: usedHint.current, finished: !revealed.current, deep: deepRec };
-    addAttempt({ ...base, findings: res === "solved" ? [] : diagnose(ex, base).findings });
-    setXp(xpFor(base, ex.difficulty.value, mode === "review"));
+    // The first attempt is the one that counts; a retry never rewrites it.
+    if (!practice) addAttempt({ ...base, findings: res === "solved" ? [] : diagnose(ex, base).findings });
+    setXp(practice ? 0 : xpFor(base, ex.difficulty.value, mode === "review"));
     setResult(res);
     setView((v) => ({ ...v }));
-  }, [addAttempt, ex, mode]);
+  }, [addAttempt, ex, mode, practice]);
 
   const grade = useCallback((): Result => (revealed.current || wrong.current.length ? "failed" : usedHint.current > 0 ? "assisted" : "solved"), []);
 
@@ -169,6 +172,7 @@ export default function Runner({ ex, mode, position, onNext, autoAdvance, sessio
       const t = e.target as HTMLElement;
       if (t && ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName)) return;
       if (result && (e.key === "Enter" || e.key === " " || e.key === "ArrowRight" || e.key === "n")) { e.preventDefault(); onNext(); }
+      else if (result && result !== "solved" && e.key === "r" && onRetry) onRetry();
       else if (!result && e.key === "h" && phase === "play") showHint();
       else if (e.key === "f") setFlip((f) => !f);
     };
@@ -184,7 +188,7 @@ export default function Runner({ ex, mode, position, onNext, autoAdvance, sessio
   const toggleTag = (c: Category) => {
     const next = tags.includes(c) ? tags.filter((x) => x !== c) : [...tags, c];
     setTags(next);
-    if (attemptTs.current !== null && result) {
+    if (attemptTs.current !== null && result && !practice) {
       const base = { result, timeMs: thinkMs.current ?? 0, deep: deep ? rec : undefined, selfReport: next, wrongMoves: wrong.current, mode };
       amendAttempt(ex.id, attemptTs.current, { selfReport: next, findings: diagnose(ex, base).findings });
     }
@@ -305,12 +309,13 @@ export default function Runner({ ex, mode, position, onNext, autoAdvance, sessio
                   </div>
                 </div>
               )}
-              <p className="text-[11px] text-mute" data-testid="saved-note">✓ Saved to this browser{revealed.current ? "" : " · counts on your map"}</p>
+              <p className="text-[11px] text-mute" data-testid="saved-note">{practice ? "Practice retry — your first attempt is the one on record" : <>✓ Saved to this browser{revealed.current ? "" : " · counts on your map"}</>}</p>
               <div className="flex gap-2">
+                {result !== "solved" && onRetry && <button className="btn" data-testid="retry" onClick={onRetry}>Try again</button>}
                 <button className="btn btn-primary flex-1" data-testid="next" onClick={onNext} autoFocus>Next exercise →</button>
                 <Link className="btn" href={`/partner?id=${encodeURIComponent(ex.id)}`}>Discuss</Link>
               </div>
-              <p className="text-center text-[11px] text-mute">Enter / Space for next · f flips the board</p>
+              <p className="text-center text-[11px] text-mute">Enter / Space for next{result !== "solved" && onRetry ? " · r to try again" : ""} · f flips the board</p>
             </div>
           )}
           {!result && phase === "play" && <p className="px-1 text-[11px] text-mute">h for a hint · f flips the board. A legal move that differs from the book is checked by the engine before it is judged.</p>}

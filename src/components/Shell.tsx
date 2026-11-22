@@ -2,8 +2,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppProvider } from "@/lib/store";
+import { AccountChip } from "./Account";
 
-const NAV = [["/", "World"], ["/library", "Library"], ["/today", "Train"], ["/coach", "AI Coach"], ["/profile", "Profile"]];
+const NAV = [["/", "World"], ["/library", "Library"], ["/today", "Train"], ["/openings", "Openings"], ["/coach", "AI Coach"], ["/profile", "Profile"]];
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
@@ -21,6 +22,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               return <Link key={href} href={href} className={`rounded-lg px-3 py-1.5 whitespace-nowrap ${on ? "bg-panel2 text-ink" : "text-mute hover:text-ink"}`}>{label}</Link>;
             })}
           </nav>
+          <AccountChip />
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>

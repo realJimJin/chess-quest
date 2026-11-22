@@ -2,7 +2,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { Attempt, BookMeta, Exercise, ProgressState } from "./types";
 import { allExercises, loadLibrary, mergeBook, saveLibrary, type Library } from "./library";
-import { emptyProgress, LocalProgressStore, recordAttempt } from "./progress";
+import { emptyProgress, LocalProgressStore, readProgress, recordAttempt } from "./progress";
+import { onCloudApplied } from "./cloud/events";
+import { startSync } from "./cloud/client";
 
 interface AppData {
   ready: boolean; library: Library; exercises: Exercise[]; progress: ProgressState;
@@ -27,7 +29,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (!live) return;
       setLibrary(lib); setProgress(prog); setReady(true);
     });
-    return () => { live = false; };
+    // sync merged in work from another device: show it
+    const off = onCloudApplied((realm) => { if (realm === "progress") setProgress(readProgress()); });
+    startSync();
+    return () => { live = false; off(); };
   }, []);
 
   const addAttempt = useCallback((a: Attempt) => {
@@ -52,7 +57,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const removeBook = useCallback(async (id: string) => {
     const lib = { ...(await loadLibrary()) }; delete lib[id]; await persist(lib);
   }, [persist]);
-  const resetProgress = useCallback(() => { const e = emptyProgress(); setProgress(e); void store.save(e); }, []);
+  const resetProgress = useCallback(() => { setProgress(emptyProgress()); void store.reset(); }, []);
 
   const exercises = useMemo(() => allExercises(library), [library]);
   const value = useMemo(() => ({ ready, library, exercises, progress, addAttempt, amendAttempt, importBook, updateExercise, removeBook, resetProgress }),

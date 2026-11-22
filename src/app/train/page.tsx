@@ -23,6 +23,7 @@ function Session() {
   const { ready, exercises, progress } = useApp();
   const [queue, setQueue] = useState<string[] | null>(null);
   const [idx, setIdx] = useState(0);
+  const [tries, setTries] = useState(0);   // retries of the current exercise
   const [sessionStart] = useState(() => Date.now());
   const [auto, setAuto] = useState(true);
   const [timer, setTimer] = useState(false);
@@ -57,7 +58,8 @@ function Session() {
     setQueue(ids);
   }, [ready, queue, exercises, progress, mode, book, chapter, id, minDiff, level]);
 
-  const next = useCallback(() => { setDone((d) => d + 1); setIdx((i) => i + 1); }, []);
+  const next = useCallback(() => { setDone((d) => d + 1); setTries(0); setIdx((i) => i + 1); }, []);
+  const retry = useCallback(() => setTries((t) => t + 1), []);
   const byId = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
 
   if (!ready || !queue) return <p className="py-20 text-center text-mute">Loading your library…</p>;
@@ -102,7 +104,7 @@ function Session() {
           {mode === "focus" && typeof document !== "undefined" && document.fullscreenEnabled && <button className="chip" onClick={() => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => undefined))}>Full screen</button>}
         </div>
       </div>
-      <Runner key={`${ex.id}:${idx}`} ex={ex} mode={mode} position={`${idx + 1}/${queue.length}`} onNext={next} autoAdvance={auto} sessionStart={sessionStart} showSessionTimer={mode === "focus" && timer} />
+      <Runner key={`${ex.id}:${idx}:${tries}`} practice={tries > 0} onRetry={retry} ex={ex} mode={mode} position={`${idx + 1}/${queue.length}`} onNext={next} autoAdvance={auto} sessionStart={sessionStart} showSessionTimer={mode === "focus" && timer} />
     </div>
   );
 }

@@ -7,11 +7,14 @@ import { computeStats } from "@/lib/progress";
 import { isTrainable } from "@/lib/validate";
 import { activity, rankFor, totalXp } from "@/lib/game";
 import { MILESTONES } from "@/lib/profile";
+import { AccountCard } from "@/components/Account";
+import { useSync } from "@/lib/cloud/client";
 
 export default function ProfilePage() {
   const { exercises, progress, resetProgress } = useApp();
   const [profile, setProfile] = useProfile();
   const [now] = useState(() => Date.now());
+  const signedIn = !!useSync().user;
   const [reached, setReached] = useState<string[]>([]);
   useEffect(() => { try { setReached(JSON.parse(localStorage.getItem("cst.milestones") ?? "[]")); } catch { /* none */ } }, []);
   const toggle = (k: string) => { const n = reached.includes(k) ? reached.filter((x) => x !== k) : [...reached, k]; setReached(n); try { localStorage.setItem("cst.milestones", JSON.stringify(n)); } catch { /* ignore */ } };
@@ -24,9 +27,10 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div><h1 className="text-2xl font-semibold tracking-tight">Profile</h1><p className="text-sm text-mute">Stored in this browser. The same record becomes your account later.</p></div>
+        <div><h1 className="text-2xl font-semibold tracking-tight">Profile</h1><p className="text-sm text-mute">{signedIn ? "Saved on this device and synced to your account." : "Stored in this browser."}</p></div>
         <input className="field w-56" placeholder="Your name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
       </div>
+      <AccountCard />
       <section className="grid gap-3 md:grid-cols-4">
         <div className="card p-4 md:col-span-2"><div className="label">Rank {rank.level} · {xp} XP</div><div className="mt-1 text-2xl font-semibold">{rank.title}</div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-panel2"><div className="h-full bg-accent" style={{ width: `${(rank.into / rank.span) * 100}%` }} /></div>
@@ -64,7 +68,7 @@ export default function ProfilePage() {
         </div>
       </section>
       <div className="flex flex-wrap gap-2"><Link className="btn" href="/partner">Partner session</Link><Link className="btn" href="/import">Import and review</Link>
-        <button className="btn btn-ghost text-xs" onClick={() => window.confirm("Erase all recorded attempts and the review queue on this device?") && resetProgress()}>Reset progress on this device</button></div>
+        <button className="btn btn-ghost text-xs" onClick={() => window.confirm("Erase all recorded attempts and the review queue? If you are signed in, this also erases them from your account and your other devices.") && resetProgress()}>Reset progress</button></div>
     </div>
   );
 }
