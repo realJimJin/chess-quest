@@ -1,44 +1,51 @@
 "use client";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Runner from "@/components/Runner";
+import SessionSummary from "@/components/training/SessionSummary";
+import styles from "@/components/training/training.module.css";
+import { requestedExerciseIds } from "@/components/training/plan";
 import { useApp } from "@/lib/store";
 import { isTrainable } from "@/lib/validate";
 import { computeStats, dueReviews } from "@/lib/progress";
 import { buildCampaign } from "@/lib/game";
-import type { Mode } from "@/lib/types";
+import type { Attempt, Mode } from "@/lib/types";
 
-const MODES: Record<Mode, { title: string; blurb: string }> = {
-  flow: { title: "Puzzle Flow", blurb: "One exercise after another, in book order." },
-  deep: { title: "Deep Calculation", blurb: "Board locked. Think, write your lines, commit once." },
-  review: { title: "Mistake Review", blurb: "Missed exercises, spaced out until they stick." },
-  focus: { title: "Focus", blurb: "Just the board." },
+const MODES: Record<Mode, { title: string; short: string; blurb: string }> = {
+  flow: { title: "Practice on the board.", short: "Puzzle Flow", blurb: "Find the idea. Play it through. Carry what you learn into the next position." },
+  deep: { title: "Calculation notebook.", short: "Calculate", blurb: "Keep the pieces still. Consider your candidates and write the line you believe in." },
+  review: { title: "Review your positions.", short: "Review", blurb: "Return to the positions that deserve another thoughtful look." },
+  focus: { title: "Focus training.", short: "Focus", blurb: "A little less around you. A little more attention on the board." },
 };
+
+function savedPreference(key: string, fallback: boolean) {
+  try { const value = localStorage.getItem(key); return value === null ? fallback : value === "1"; }
+  catch { return fallback; }
+}
 
 function Session() {
   const q = useSearchParams();
   const mode = (["flow", "deep", "review", "focus"].includes(q.get("mode") ?? "") ? q.get("mode") : "flow") as Mode;
   const book = q.get("book"), chapter = q.get("chapter"), id = q.get("id"), minDiff = Number(q.get("min") ?? 0), level = q.get("level");
-  const { ready, exercises, progress } = useApp();
-  const [queue, setQueue] = useState<string[] | null>(null);
+  const requested = q.get("ids");
+  const { exercises, progress, library } = useApp();
   const [idx, setIdx] = useState(0);
+  const [tries, setTries] = useState(0);
   const [sessionStart] = useState(() => Date.now());
-  const [auto, setAuto] = useState(true);
-  const [timer, setTimer] = useState(false);
+  const [auto, setAuto] = useState(() => savedPreference("cst.auto", true));
+  const [timer, setTimer] = useState(() => savedPreference("cst.timer", false));
   const [done, setDone] = useState(0);
+  const [sessionAttempts, setSessionAttempts] = useState<Attempt[]>([]);
 
-  useEffect(() => {
-    try { setAuto(localStorage.getItem("cst.auto") !== "0"); setTimer(localStorage.getItem("cst.timer") === "1"); } catch { /* defaults */ }
-  }, []);
-  useEffect(() => { setQueue(null); setIdx(0); setDone(0); }, [mode, book, chapter, id, minDiff]);
-  useEffect(() => {
-    // the queue is fixed when the session starts so it doesn't reshuffle as you solve
-    if (!ready || queue) return;
+  const [queue] = useState(() => {
+    // SessionRoute waits for the library. Capture the queue once so solving or
+    // background sync cannot reshuffle the session already in progress.
     const pool = exercises.filter(isTrainable);
     const byId = new Map(pool.map((e) => [e.id, e]));
     let ids: string[];
-    if (id) ids = byId.has(id) ? [id] : [];
+    if (requested !== null) ids = requestedExerciseIds(requested, new Set(byId.keys()));
+    else if (id) ids = byId.has(id) ? [id] : [];
     else if (level) {
       const solved = computeStats(progress, pool, Date.now()).doneIds;
       const lv = buildCampaign(level.split(":")[0], exercises, solved, true).levels.find((l) => l.id === level);
@@ -54,31 +61,35 @@ function Session() {
       const fresh = list.filter((e) => !solved.has(e.id));
       ids = (fresh.length ? fresh : list).map((e) => e.id);
     }
-    setQueue(ids);
-  }, [ready, queue, exercises, progress, mode, book, chapter, id, minDiff, level]);
+    return ids;
+  });
 
-  const next = useCallback(() => { setDone((d) => d + 1); setIdx((i) => i + 1); }, []);
+  const next = useCallback(() => { setDone((d) => d + 1); setTries(0); setIdx((i) => i + 1); }, []);
+  const retry = useCallback(() => setTries(value => value + 1), []);
+  const recordInSession = useCallback((attempt: Attempt) => setSessionAttempts(attempts => [...attempts, attempt]), []);
   const byId = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
 
-  if (!ready || !queue) return <p className="py-20 text-center text-mute">Loading your library…</p>;
   const ex = queue[idx] ? byId.get(queue[idx]) : undefined;
   const trainable = exercises.filter(isTrainable).length;
+  const mapBook = book ?? (level ? level.split(":")[0] : undefined);
+  const mapHref = mapBook ? `/world?book=${encodeURIComponent(mapBook)}` : "/world";
+  const collection = ex ? library[ex.bookId] : undefined;
+  const collectionTitle = ex?.bookId === "samples" ? "The Starter Collection" : collection?.book.title;
 
   if (!ex) {
+    if (done > 0) {
+      return <SessionSummary attempts={sessionAttempts} mapHref={mapHref} />;
+    }
     return (
-      <div className="card mx-auto mt-10 max-w-lg p-8 text-center" data-testid="session-end">
+      <div className={styles.emptyState} data-testid="session-end">
         {trainable === 0 ? (<>
           <h1 className="text-xl font-semibold">No exercises in your library yet</h1>
-          <p className="mt-2 text-sm text-mute">This trainer only uses positions from your own copy of the book. Import it to start.</p>
-          <Link href="/import" className="btn btn-primary mt-5">Import the book</Link>
-        </>) : done > 0 ? (<>
-          <h1 className="text-xl font-semibold">Session complete</h1>
-          <p className="mt-2 text-sm text-mute">{done} exercise{done === 1 ? "" : "s"} worked through.</p>
-          <div className="mt-5 flex justify-center gap-2"><Link href="/" className="btn btn-primary">Back to the map</Link><Link href="/coach" className="btn">AI Coach</Link></div>
+          <p className="mt-2 text-sm text-mute">Start with eight original puzzles, or import your own exercise collection.</p>
+          <Link href="/" className="btn btn-primary mt-5">Open your library</Link>
         </>) : (<>
           <h1 className="text-xl font-semibold">{mode === "review" ? "Nothing due for review" : "No exercises match"}</h1>
           <p className="mt-2 text-sm text-mute">{mode === "review" ? "Missed exercises come back here on a schedule." : "Try another chapter or difficulty."}</p>
-          <Link href="/" className="btn btn-primary mt-5">Back to the map</Link>
+          <Link href="/" className="btn btn-primary mt-5">Back to your library</Link>
         </>)}
       </div>
     );
@@ -86,27 +97,44 @@ function Session() {
 
   const toggle = (key: string, v: boolean, set: (b: boolean) => void) => { set(v); try { localStorage.setItem(key, v ? "1" : "0"); } catch { /* ignore */ } };
   return (
-    <div>
-      <div className={`mb-4 flex flex-wrap items-center justify-between gap-2 ${mode === "focus" ? "opacity-60 hover:opacity-100" : ""}`}>
+    <div className={styles.workspace}>
+      <nav className={styles.breadcrumb} aria-label="Breadcrumb"><Link href="/">Library</Link><span aria-hidden="true">/</span>{collectionTitle && <><span>{collectionTitle}</span><span aria-hidden="true">/</span></>}<span>{ex.chapter.title}</span></nav>
+      <header className={styles.sessionHeader}>
         <div>
-          <h1 className="text-base font-semibold">{MODES[mode].title}</h1>
-          {mode !== "focus" && <p className="text-xs text-mute">{MODES[mode].blurb}</p>}
+          <span className="eyebrow">{mode === "deep" ? "DEEP CALCULATION" : mode === "review" ? "MISTAKE REVIEW" : mode === "focus" ? "FOCUS" : "PUZZLE FLOW"}</span>
+          <h1>{MODES[mode].title}</h1>
+          {mode !== "focus" && <p>{MODES[mode].blurb}</p>}
         </div>
-        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+        <nav className={styles.modeNav} aria-label="Training mode">
           {(Object.keys(MODES) as Mode[]).map((m) => {
-            const p = new URLSearchParams(q.toString()); p.set("mode", m); p.delete("id");
-            return <Link key={m} href={`/train?${p}`} className="chip" data-on={m === mode}>{MODES[m].title}</Link>;
+            const p = new URLSearchParams(q.toString()); p.set("mode", m); p.delete("id"); p.delete("ids");
+            return <Link key={m} href={`/train?${p}`} aria-current={m === mode ? "page" : undefined}>{MODES[m].short}</Link>;
           })}
-          {mode !== "deep" && <button className="chip" data-on={auto} onClick={() => toggle("cst.auto", !auto, setAuto)}>Auto-advance</button>}
-          {mode === "focus" && <button className="chip" data-on={timer} onClick={() => toggle("cst.timer", !timer, setTimer)}>Session timer</button>}
-          {mode === "focus" && typeof document !== "undefined" && document.fullscreenEnabled && <button className="chip" onClick={() => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => undefined))}>Full screen</button>}
+        </nav>
+      </header>
+      <div className={styles.sessionTools}>
+        <div className={styles.sessionPosition}><span>Position {idx + 1} of {queue.length}</span><progress value={idx} max={queue.length} aria-label="Exercises worked through" /></div>
+        <div className={styles.preferences}>
+          {mode !== "deep" && <label><input type="checkbox" checked={auto} onChange={event => toggle("cst.auto", event.target.checked, setAuto)} />Auto-advance</label>}
+          {mode === "focus" && <label><input type="checkbox" checked={timer} onChange={event => toggle("cst.timer", event.target.checked, setTimer)} />Session timer</label>}
+          {mode === "focus" && typeof document !== "undefined" && document.fullscreenEnabled && <button onClick={() => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => undefined))}>Full screen</button>}
         </div>
       </div>
-      <Runner key={`${ex.id}:${idx}`} ex={ex} mode={mode} position={`${idx + 1}/${queue.length}`} onNext={next} autoAdvance={auto} sessionStart={sessionStart} showSessionTimer={mode === "focus" && timer} />
+      <Runner key={`${ex.id}:${idx}:${tries}`} practice={tries > 0} onRetry={retry} ex={ex} mode={mode} position={`${idx + 1}/${queue.length}`} onNext={next} onRecorded={recordInSession} autoAdvance={auto} sessionStart={sessionStart} showSessionTimer={mode === "focus" && timer} />
     </div>
   );
 }
 
+function SessionRoute() {
+  const query = useSearchParams();
+  const { ready } = useApp();
+  // A changed chapter, level or mode starts a fresh UI session. The provider and
+  // its saved attempts stay mounted; only the fixed queue and timers restart.
+  const identity = JSON.stringify(["mode", "book", "chapter", "id", "ids", "min", "level"].map(key => query.get(key)));
+  if (!ready) return <p className={styles.loading} role="status">Preparing your study space…</p>;
+  return <Session key={identity} />;
+}
+
 export default function TrainPage() {
-  return <Suspense fallback={<p className="py-20 text-center text-mute">Loading…</p>}><Session /></Suspense>;
+  return <Suspense fallback={<p className={styles.loading} role="status">Preparing your study space…</p>}><SessionRoute /></Suspense>;
 }

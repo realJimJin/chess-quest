@@ -86,6 +86,8 @@ export interface Attempt {
   deep?: DeepRecord;
   selfReport?: Category[];
   findings?: Finding[];
+  /** when this record was last amended (ms); set by the storage layer, used to merge devices */
+  rev?: number;
 }
 
 export interface Srs { due: number; intervalDays: number; lapses: number }

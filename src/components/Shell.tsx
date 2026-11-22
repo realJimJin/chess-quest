@@ -1,32 +1,39 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AppProvider } from "@/lib/store";
+import { AppProvider, useApp } from "@/lib/store";
+import { IS_IOS } from "@/lib/target";
+import { AccountChip } from "./Account";
+import QuestIcon, { type IconName } from "./QuestIcon";
 
-const NAV = [["/", "World"], ["/library", "Library"], ["/today", "Train"], ["/coach", "AI Coach"], ["/profile", "Profile"]];
-
+const NAV: { href: string; label: string; icon: IconName }[] = [
+  { href: "/", label: "Library", icon: "book" },
+  { href: "/today", label: "Training", icon: "target" },
+  { href: "/openings", label: "Openings", icon: "knight" },
+  { href: "/world", label: "Journey", icon: "map" },
+  { href: "/battles", label: "Battles", icon: "swords" },
+];
+function ProgressNotice() {
+  const { progressError, canRetryProgressSave, retryProgressSave } = useApp();
+  return progressError ? <div role="alert" className="notice-error"><p>{progressError}</p>{canRetryProgressSave && <button className="btn mt-3" onClick={retryProgressSave}>Retry saving</button>}</div> : null;
+}
 export default function Shell({ children }: { children: React.ReactNode }) {
-  const path = usePathname();
-  return (
-    <AppProvider>
-      <header className="sticky top-0 z-20 border-b border-line bg-bg/85 backdrop-blur" data-chrome>
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-accent text-lg text-[#062a26]">♞</span>
-            <span className="hidden sm:inline">Chess Quest</span>
-          </Link>
-          <nav className="flex flex-1 items-center gap-1 overflow-x-auto text-sm">
-            {NAV.map(([href, label]) => {
-              const on = href === "/" ? path === "/" : path.startsWith(href) || (href === "/today" && path === "/train") || (href === "/library" && path === "/import") || (href === "/profile" && path === "/partner");
-              return <Link key={href} href={href} className={`rounded-lg px-3 py-1.5 whitespace-nowrap ${on ? "bg-panel2 text-ink" : "text-mute hover:text-ink"}`}>{label}</Link>;
-            })}
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-      <footer className="mx-auto flex max-w-6xl gap-4 px-4 pb-28 text-xs text-mute lg:pb-8" data-chrome>
-        <Link href="/privacy" className="hover:text-ink">Privacy</Link><Link href="/support" className="hover:text-ink">Support &amp; license</Link>
-      </footer>
-    </AppProvider>
-  );
+  const path = usePathname().replace(/\/+$/, "") || "/";
+  const surface = path === "/" || path === "/library" ? "library" : "study";
+  return <AppProvider><div className="app-shell" data-surface={surface} data-route={path}>
+    <a className="skip-link" href="#main-content">Skip to content</a>
+    <aside className="app-rail" data-chrome>
+      <Link href="/" className="brand-mark" aria-label="Chess Quest home"><QuestIcon name="knight" /></Link>
+      <nav className="main-nav" aria-label="Main navigation">{NAV.filter(item => !IS_IOS || item.href !== "/battles").map(({ href, label, icon }) => {
+        const on = href === "/" ? ["/", "/library", "/import"].includes(path) : path.startsWith(href) || (href === "/today" && path === "/train");
+        return <Link key={href} href={href} className="nav-link" aria-current={on ? "page" : undefined}><QuestIcon name={icon} /><span>{label}</span></Link>;
+      })}</nav>
+      <Link href="/profile" className="rail-profile" aria-label="Your profile and settings" aria-current={path === "/profile" ? "page" : undefined}>CQ</Link>
+    </aside>
+    <div className="app-content">
+      <header className="app-header" data-chrome><Link href="/" className="wordmark">CHESS<span>QUEST</span><small>A place to think.</small></Link><div className="header-status"><span>YOUR PERSONAL STUDY SPACE</span><AccountChip /><Link href="/profile" className="mobile-profile" aria-label="Your profile and settings"><QuestIcon name="user" /></Link></div></header>
+      <main id="main-content" className="app-main"><ProgressNotice />{children}</main>
+      <footer className="app-footer" data-chrome><span>A small library. A deeper understanding.</span><div><Link href="/coach">Coach</Link><Link href="/profile">Profile</Link><Link href="/privacy">Privacy</Link><Link href="/support">Support &amp; license</Link></div></footer>
+    </div>
+  </div></AppProvider>;
 }

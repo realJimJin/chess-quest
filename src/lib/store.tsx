@@ -1,11 +1,16 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Attempt, BookMeta, Exercise, ProgressState } from "./types";
 import { allExercises, loadLibrary, mergeBook, saveLibrary, type Library } from "./library";
-import { emptyProgress, LocalProgressStore, recordAttempt } from "./progress";
+import { emptyProgress, LocalProgressStore, PROGRESS_KEY, readProgress, recordAttempt, RESET_KEY } from "./progress";
+import { onCloudApplied } from "./cloud/events";
+import { startSync } from "./cloud/client";
 
 interface AppData {
   ready: boolean; library: Library; exercises: Exercise[]; progress: ProgressState;
+  progressError: string | null;
+  canRetryProgressSave: boolean;
+  retryProgressSave(): void;
   addAttempt(a: Attempt): void;
   amendAttempt(exerciseId: string, ts: number, patch: Partial<Attempt>): void;
   importBook(book: BookMeta, exercises: Exercise[], report?: Record<string, unknown>): Promise<void>;
@@ -20,6 +25,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [library, setLibrary] = useState<Library>({});
   const [progress, setProgress] = useState<ProgressState>(emptyProgress());
+  const [progressFailure, setProgressFailure] = useState<{ message: string; retrySave: boolean } | null>(null);
+  const progressError = progressFailure?.message ?? null;
+  const canRetryProgressSave = progressFailure?.retrySave ?? false;
+  const pendingEdits = useRef<Array<(state: ProgressState) => ProgressState>>([]);
 
   useEffect(() => {
     let live = true;
@@ -27,18 +36,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (!live) return;
       setLibrary(lib); setProgress(prog); setReady(true);
     });
+    startSync();
     return () => { live = false; };
   }, []);
 
+  useEffect(() => {
+    const refresh = () => setProgress(pendingEdits.current.reduce((state, edit) => edit(state), readProgress()));
+    const unsubscribe = onCloudApplied(realm => { if (realm === "progress") refresh(); });
+    const onStorage = (event: StorageEvent) => {
+      if (event.storageArea === localStorage && (!event.key || event.key === PROGRESS_KEY || event.key === RESET_KEY)) refresh();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => { unsubscribe(); window.removeEventListener("storage", onStorage); };
+  }, []);
+
+  const retryProgressSave = useCallback(() => {
+    if (!pendingEdits.current.length) return;
+    try {
+      const edits = pendingEdits.current;
+      const saved = store.update(state => edits.reduce((next, edit) => edit(next), state));
+      pendingEdits.current = [];
+      setProgress(saved); setProgressFailure(null);
+    }
+    catch {
+      setProgressFailure({ message: "Your latest progress could not be saved on this device. Keep this page open; it may be lost if you leave or reload.", retrySave: true });
+    }
+  }, []);
+  const updateProgress = useCallback((edit: (state: ProgressState) => ProgressState) => {
+    pendingEdits.current.push(edit);
+    setProgress(edit);
+    retryProgressSave();
+  }, [retryProgressSave]);
   const addAttempt = useCallback((a: Attempt) => {
-    setProgress((p) => { const n = recordAttempt(p, a); void store.save(n); return n; });
-  }, []);
+    updateProgress(p => recordAttempt(p, a));
+  }, [updateProgress]);
   const amendAttempt = useCallback((exerciseId: string, ts: number, patch: Partial<Attempt>) => {
-    setProgress((p) => {
-      const n = { ...p, attempts: p.attempts.map((a) => (a.exerciseId === exerciseId && a.ts === ts ? { ...a, ...patch } : a)) };
-      void store.save(n); return n;
-    });
-  }, []);
+    updateProgress(p => ({ ...p, attempts: p.attempts.map(a => a.exerciseId === exerciseId && a.ts === ts ? { ...a, ...patch } : a) }));
+  }, [updateProgress]);
   const persist = useCallback(async (lib: Library) => { setLibrary(lib); await saveLibrary(lib); }, []);
   const importBook = useCallback(async (book: BookMeta, exs: Exercise[], report?: Record<string, unknown>) => {
     await persist(mergeBook(await loadLibrary(), book, exs, report));
@@ -52,11 +86,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const removeBook = useCallback(async (id: string) => {
     const lib = { ...(await loadLibrary()) }; delete lib[id]; await persist(lib);
   }, [persist]);
-  const resetProgress = useCallback(() => { const e = emptyProgress(); setProgress(e); void store.save(e); }, []);
+  const resetProgress = useCallback(() => {
+    void store.reset().then(() => { pendingEdits.current = []; setProgress(readProgress()); setProgressFailure(null); })
+      .catch(() => setProgressFailure({ message: "Progress could not be reset completely. Use Reset progress in Profile to try again.", retrySave: false }));
+  }, []);
 
   const exercises = useMemo(() => allExercises(library), [library]);
-  const value = useMemo(() => ({ ready, library, exercises, progress, addAttempt, amendAttempt, importBook, updateExercise, removeBook, resetProgress }),
-    [ready, library, exercises, progress, addAttempt, amendAttempt, importBook, updateExercise, removeBook, resetProgress]);
+  const value = useMemo(() => ({ ready, library, exercises, progress, progressError, canRetryProgressSave, retryProgressSave, addAttempt, amendAttempt, importBook, updateExercise, removeBook, resetProgress }),
+    [ready, library, exercises, progress, progressError, canRetryProgressSave, retryProgressSave, addAttempt, amendAttempt, importBook, updateExercise, removeBook, resetProgress]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

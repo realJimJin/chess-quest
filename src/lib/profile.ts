@@ -1,5 +1,6 @@
 // The player's own profile. Phase 1 keeps it in this browser; the shape is what
 // an account record would hold later.
+import { notifyLocalWrite } from "./cloud/events";
 export interface PlayerProfile {
   name: string;
   ratings: { label: string; value: string }[];
@@ -38,7 +39,12 @@ const KEY = "cst.profile.v1";
 export function loadProfile(): PlayerProfile {
   try { const raw = localStorage.getItem(KEY); return raw ? { ...DEFAULT_PROFILE, ...JSON.parse(raw) } : DEFAULT_PROFILE; } catch { return DEFAULT_PROFILE; }
 }
-export function saveProfile(p: PlayerProfile) { try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* ignore */ } }
+export function saveProfile(p: PlayerProfile) { try { localStorage.setItem(KEY, JSON.stringify(p)); notifyLocalWrite("profile"); } catch { /* ignore */ } }
+/** The saved profile exactly as stored, or null if nothing was ever saved. For sync. */
+export function readStoredProfile(): Record<string, unknown> | null {
+  try { const v = JSON.parse(localStorage.getItem(KEY) ?? "null"); return v && typeof v === "object" && !Array.isArray(v) ? v : null; } catch { return null; }
+}
+export function writeStoredProfile(d: Record<string, unknown>) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch { /* ignore */ } }
 
 // Rating milestones are personal goals the player ticks off after earning them
 // over the board. The app never awards a rating or a title.

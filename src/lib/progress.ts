@@ -1,22 +1,63 @@
 import type { Attempt, Category, Exercise, ProgressState, Srs } from "./types";
+import { mergeLocalSave } from "./cloud/merge";
+import { notifyLocalWrite } from "./cloud/events";
 
 export const DAY = 86400000;
 const LADDER = [1, 3, 7, 16, 35, 80];
 export const emptyProgress = (): ProgressState => ({ version: 1, attempts: [], srs: {} });
 
-/** Storage boundary: swap this for an account-backed adapter to sync later. */
-export interface ProgressStore { load(): Promise<ProgressState>; save(s: ProgressState): Promise<void> }
+/** Storage boundary. `save` folds a screen's edits into what is stored instead of
+ *  replacing it, so a stale tab or a background sync can never drop attempts.
+ *  Only `reset` removes anything. */
+export interface ProgressStore { load(): Promise<ProgressState>; save(s: ProgressState): Promise<void>; reset(): Promise<void> }
+
+export const PROGRESS_KEY = "cst.progress.v1";
+/** Time of the last "reset progress" on this device, waiting to reach the cloud. */
+export const RESET_KEY = "cst.progress.reset";
+const resetKeyFor = (key: string) => key === PROGRESS_KEY ? RESET_KEY : `${key}.reset`;
+const readReset = (key: string) => Number(localStorage.getItem(resetKeyFor(key))) || 0;
+
+export function readProgress(key = PROGRESS_KEY): ProgressState {
+  try {
+    const raw = localStorage.getItem(key);
+    const s = raw ? (JSON.parse(raw) as ProgressState) : null;
+    if (!s || s.version !== 1 || !Array.isArray(s.attempts)) return emptyProgress();
+    const resetAt = readReset(key);
+    const attempts = resetAt ? s.attempts.filter(a => a.ts > resetAt) : s.attempts;
+    return { version: 1, attempts, srs: rebuildSrs(attempts) };
+  } catch { return emptyProgress(); }
+}
+/** Write without merging. For the sync engine, which has already merged. */
+export function writeProgress(s: ProgressState, key = PROGRESS_KEY) { localStorage.setItem(key, JSON.stringify(s)); }
 
 export class LocalProgressStore implements ProgressStore {
-  constructor(private key = "cst.progress.v1") {}
-  async load() {
-    try {
-      const raw = localStorage.getItem(this.key);
-      const s = raw ? (JSON.parse(raw) as ProgressState) : null;
-      return s && s.version === 1 && Array.isArray(s.attempts) ? s : emptyProgress();
-    } catch { return emptyProgress(); }
+  private key: string;
+  constructor(key = PROGRESS_KEY) { this.key = key; }
+  async load() { return readProgress(this.key); }
+  async save(s: ProgressState) {
+    this.persist(s);
   }
-  async save(s: ProgressState) { localStorage.setItem(this.key, JSON.stringify(s)); }
+  /** Apply an intentional edit to the latest stored revision, not a screen's
+   * stale copy. In particular, successive reflection edits must retain `rev`. */
+  update(edit: (state: ProgressState) => ProgressState): ProgressState {
+    return this.persist(edit(readProgress(this.key)));
+  }
+  private persist(s: ProgressState): ProgressState {
+    const resetAt = readReset(this.key);
+    const incoming = resetAt ? s.attempts.filter(a => a.ts > resetAt) : s.attempts;
+    const attempts = mergeLocalSave(readProgress(this.key).attempts, incoming, Date.now());
+    const next: ProgressState = { version: 1, attempts, srs: rebuildSrs(attempts) };
+    writeProgress(next, this.key);
+    notifyLocalWrite("progress");
+    return next;
+  }
+  async reset() {
+    // Persist the reset barrier first. If storage fails, do not erase the log
+    // without the marker needed to reject a later save from a stale tab.
+    localStorage.setItem(resetKeyFor(this.key), String(Date.now()));
+    writeProgress(emptyProgress(), this.key);
+    notifyLocalWrite("progress");
+  }
 }
 
 /** Spaced repetition: a miss enters the queue for tomorrow; each clean solve
@@ -35,6 +76,17 @@ export function recordAttempt(state: ProgressState, a: Attempt): ProgressState {
   const n = nextSrs(srs[a.exerciseId], a.result, a.ts);
   if (n) srs[a.exerciseId] = n;
   return { ...state, attempts: [...state.attempts, a], srs };
+}
+
+/** The spaced-repetition state is a pure function of the attempt log, replayed
+ *  in time order. Devices that hold the same attempts agree on what is due. */
+export function rebuildSrs(attempts: Attempt[]): Record<string, Srs> {
+  const srs: Record<string, Srs> = {};
+  for (const a of [...attempts].sort((x, y) => x.ts - y.ts)) {
+    const n = nextSrs(srs[a.exerciseId], a.result, a.ts);
+    if (n) srs[a.exerciseId] = n;
+  }
+  return srs;
 }
 
 export const dueReviews = (state: ProgressState, now: number): string[] =>
