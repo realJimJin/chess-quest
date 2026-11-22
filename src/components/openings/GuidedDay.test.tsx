@@ -34,6 +34,13 @@ it("shows a move, its arrow and explanation, then recalls the full line and save
   await screen.findByText("Practice complete");
   await waitFor(()=>expect(progress.save).toHaveBeenCalledTimes(1));
   expect(progress.load().lines[DAY_LESSONS[0][0].id].accuracy).toBe(88);
+  fireEvent.keyDown(window,{key:"ArrowLeft"});
+  expect(screen.getByText(/Review ·/)).toBeTruthy();
+  expect(screen.queryAllByRole("button",{name:/^Board /})).toHaveLength(0);
+  fireEvent.keyDown(window,{key:"ArrowRight"});
+  expect(screen.getByText("Practice complete")).toBeTruthy();
+  expect(progress.save).toHaveBeenCalledTimes(1);
+  expect(progress.load().lines[DAY_LESSONS[0][0].id].accuracy).toBe(88);
   await userEvent.click(screen.getByRole("button",{name:"Next lesson →"}));
   expect(screen.getByRole("heading",{level:2}).textContent).toContain("keep the f-pawn free");
   expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("0");
@@ -53,6 +60,68 @@ it("pauses the demonstration and cancels it when switching lessons",async()=>{
   await act(async()=>{vi.advanceTimersByTime(5200);});
   expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("0");
   expect(screen.getByRole("heading",{level:2}).textContent).toContain("Nimzo-Indian");
+});
+
+it("steps through the demonstration with arrow keys, bounds navigation and pauses playback",async()=>{
+  vi.useFakeTimers();
+  const progress=store();
+  const steps=compileLine(DAY_LESSONS[0][0]);
+  render(<GuidedDay day={0} onExit={()=>{}} progressStore={progress}/>);
+  const button=screen.getByTestId("show-next-move");
+  button.focus();
+  fireEvent.keyDown(button,{key:"ArrowLeft"});
+  expect(screen.getByTestId("board").getAttribute("data-fen")).toBe(new Chess().fen());
+  fireEvent.keyDown(button,{key:"ArrowRight"});
+  expect(screen.getByTestId("board").getAttribute("data-fen")).toBe(steps[0].after);
+  expect(screen.getByTestId("lesson-explanation").textContent).toContain("controls c5 and e5");
+  fireEvent.click(screen.getByRole("button",{name:"Play demonstration"}));
+  fireEvent.keyDown(window,{key:"ArrowLeft"});
+  await act(async()=>{vi.advanceTimersByTime(5200);});
+  expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("0");
+  expect(screen.getByRole("button",{name:"Play demonstration"})).toBeTruthy();
+  for(let i=0;i<steps.length+2;i++)fireEvent.keyDown(window,{key:"ArrowRight"});
+  expect(screen.getByTestId("board").getAttribute("data-fen")).toBe(steps.at(-1)!.after);
+  for(let i=0;i<steps.length+2;i++)fireEvent.keyDown(window,{key:"ArrowLeft"});
+  expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("0");
+  expect(progress.save).not.toHaveBeenCalled();
+});
+
+it("reviews practice history without skipping unplayed moves, and pauses the opponent until returning",async()=>{
+  vi.useFakeTimers();
+  render(<GuidedDay day={0} onExit={()=>{}} progressStore={store()}/>);
+  fireEvent.click(screen.getByRole("button",{name:"2. Practice this line"}));
+  fireEvent.keyDown(window,{key:"ArrowRight"});
+  expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("0");
+  fireEvent.click(screen.getByRole("button",{name:"Board d4"}));
+  fireEvent.keyDown(window,{key:"ArrowLeft"});
+  await act(async()=>{vi.advanceTimersByTime(1100);});
+  expect(screen.getByTestId("board").getAttribute("data-fen")).toBe(new Chess().fen());
+  expect(screen.queryAllByRole("button",{name:/^Board /})).toHaveLength(0);
+  expect(screen.getByRole("button",{name:"Return to practice →"})).toBeTruthy();
+  fireEvent.keyDown(window,{key:"ArrowRight"});
+  expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("1");
+  await act(async()=>{vi.advanceTimersByTime(550);});
+  expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("2");
+  fireEvent.keyDown(window,{key:"ArrowRight"});
+  expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("2");
+  fireEvent.keyDown(window,{key:"ArrowLeft"});
+  fireEvent.click(screen.getByRole("button",{name:"Return to practice →"}));
+  expect(screen.getByRole("button",{name:"Board c4"})).toBeTruthy();
+});
+
+it("leaves text fields, lesson selectors, and modified shortcuts alone",()=>{
+  render(<GuidedDay day={0} onExit={()=>{}} progressStore={store()}/>);
+  for(const modifier of ["altKey","ctrlKey","metaKey","shiftKey","isComposing"]){
+    fireEvent.keyDown(window,{key:"ArrowRight",[modifier]:true});
+  }
+  const select=screen.getByLabelText("Choose lesson");
+  expect(fireEvent.keyDown(select,{key:"ArrowRight"})).toBe(true);
+  expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("0");
+  fireEvent.click(screen.getByRole("button",{name:"2. Practice this line"}));
+  fireEvent.click(screen.getByRole("button",{name:"Board d4"}));
+  const input=screen.getByLabelText("Move squares");
+  expect(fireEvent.keyDown(input,{key:"ArrowLeft"})).toBe(true);
+  expect(screen.getByTestId("guided-session").getAttribute("data-ply")).toBe("1");
 });
 
 it("starts Black correctly in practice and allows a keyboard move",async()=>{
