@@ -4,6 +4,7 @@ import { dbConfigured, getDb, type Db } from "./db";
 import { authConfigured, identify, type Caller } from "./auth";
 import { ensureUser } from "./users";
 import { SyncError, dueReviews, getProfile, pullProgress, pushProgress, putProfile } from "./sync";
+import { SYNC_ACCOUNT_HEADER } from "../lib/cloud/errors";
 
 export interface Deps { ready(): boolean; db(): Promise<Db>; identify(req: Request): Promise<Caller | null>; baseUrl(): string }
 const live: Deps = { ready: () => dbConfigured() && authConfigured(), db: getDb, identify, baseUrl: () => process.env.APP_BASE_URL ?? "" };
@@ -38,8 +39,12 @@ async function run(req: Request, deps: Deps, work: Work): Promise<Response> {
     const who = await deps.identify(req);
     if (!who) return fail(401, "signed-out", "Sign in to sync.");
     if (who.via === "cookie" && req.method !== "GET" && !sameSite(req, deps)) return fail(403, "cross-site", "Request must come from the app.");
+    const expected = req.headers.get(SYNC_ACCOUNT_HEADER);
+    if (who.via === "cookie" && !expected) return fail(428, "account-required", "Reload the app before syncing so it can confirm your account.");
     const db = await deps.db();
-    return await work({ db, userId: await ensureUser(db, who.identity), req });
+    const userId = await ensureUser(db, who.identity);
+    if (expected && expected !== userId) return fail(409, "account-changed", "The signed-in account changed. Reload the app before syncing. Your saved work has not been moved.");
+    return await work({ db, userId, req });
   } catch (e) {
     if (e instanceof SyncError) return fail(e.status, "invalid", e.message);
     console.error("sync request failed", e);

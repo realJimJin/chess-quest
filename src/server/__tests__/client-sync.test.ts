@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Attempt } from "../../lib/types";
 import { mergeLocalSave } from "../../lib/cloud/merge";
 import { syncProfile, syncProgress, type Api, type Doc, type Io, type SyncState } from "../../lib/cloud/engine";
+import { SYNC_ACCOUNT_HEADER, SyncAccountError } from "../../lib/cloud/errors";
 import type { Db } from "../db";
 import { ensureUser } from "../users";
 import { profileGet, profilePut, progressGet, progressPost, type Deps } from "../http";
@@ -17,13 +18,16 @@ afterAll(async () => { await db.close(); });
 let calls = 0;
 function apiFor(sub: string): Api {
   const deps: Deps = { ready: () => true, db: async () => db, identify: async () => ({ identity: { sub }, via: "cookie" }), baseUrl: () => BASE };
-  const ok = async (r: Response) => { calls++; if (!r.ok && r.status !== 409) throw new Error(`${r.status} ${await r.text()}`); return r.json(); };
-  const send = (path: string, method: string, body: unknown) => new Request(BASE + path, { method, body: JSON.stringify(body), headers: { origin: BASE } });
+  const ok = async (r: Response) => { calls++; const body = await r.json(); if (!r.ok && !(r.status === 409 && body.ok === false && "profile" in body)) throw new Error(`${r.status} ${JSON.stringify(body)}`); return body; };
+  const request = async (path: string, method = "GET", body?: unknown) => new Request(BASE + path, {
+    method, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    headers: { origin: BASE, [SYNC_ACCOUNT_HEADER]: await ensureUser(db, { sub }) },
+  });
   return {
-    pull: async (after) => ok(await progressGet(new Request(`${BASE}/api/sync/progress?after=${after}`), deps)),
-    push: async (body) => ok(await progressPost(send("/api/sync/progress", "POST", body), deps)),
-    getProfile: async () => (await ok(await profileGet(new Request(`${BASE}/api/sync/profile`), deps))).profile,
-    putProfile: async (data, baseVersion) => ok(await profilePut(send("/api/sync/profile", "PUT", { data, baseVersion }), deps)),
+    pull: async (after) => ok(await progressGet(await request(`/api/sync/progress?after=${after}`), deps)),
+    push: async (body) => ok(await progressPost(await request("/api/sync/progress", "POST", body), deps)),
+    getProfile: async () => (await ok(await profileGet(await request("/api/sync/profile"), deps))).profile,
+    putProfile: async (data, baseVersion) => ok(await profilePut(await request("/api/sync/profile", "PUT", { data, baseVersion }), deps)),
   };
 }
 class Device implements Io {
@@ -31,7 +35,7 @@ class Device implements Io {
   constructor(sub: string) { this.api = apiFor(sub); }
   state() { return this.st; } setState(s: SyncState) { this.st = structuredClone(s); }
   attempts() { return this.list; } setAttempts(a: Attempt[]) { this.list = a; }
-  pendingReset() { return this.reset; } clearReset(at: number) { if (this.reset === at) this.reset = 0; }
+  resetAt() { return this.reset; } applyReset(at: number) { this.reset = Math.max(this.reset, at); }
   profile() { return this.prof; } setProfile(d: Doc) { this.prof = d; }
   solve(id: string, ts: number, extra: Partial<Attempt> = {}) { this.list = mergeLocalSave(this.list, [att(id, ts, extra)], Date.now()); }
   ids() { return this.list.map((a) => a.exerciseId); }
@@ -76,9 +80,10 @@ describe("client sync against the real routes", () => {
     await syncProgress(a, id); await syncProgress(b, id); await syncProgress(a, id);
     a.list = []; a.reset = T + 10; a.solve("new", T + 20);
     await syncProgress(a, id);
-    expect(a.reset).toBe(0);
+    expect(a.reset).toBe(T + 10);
     await syncProgress(b, id);
     expect(b.ids()).toEqual(["new"]);
+    expect(b.reset).toBe(T + 10);
     expect(Object.keys(b.st!.synced)).toEqual([`new@${T + 20}`]);
     const fresh = new Device(sub); await syncProgress(fresh, id);
     expect(fresh.ids()).toEqual(["new"]);
@@ -104,12 +109,21 @@ describe("client sync against the real routes", () => {
     expect(await syncProgress(a, id)).toMatchObject({ pushed: 1 });
   });
 
-  it("another account signing in on the device starts from a clean cursor", async () => {
+  it("another account cannot receive this device's saved attempts or profile", async () => {
     const one = await account(), two = await account();
     const d = new Device(one.sub); d.solve("p", T + 1); await syncProgress(d, one.id);
+    d.prof = { name: "First account" }; await syncProfile(d, one.id);
     d.api = apiFor(two.sub);
-    expect(await syncProgress(d, two.id)).toEqual({ pulled: 0, pushed: 1 });
-    expect(d.st!.userId).toBe(two.id);
+    await expect(syncProgress(d, two.id)).rejects.toThrow(SyncAccountError);
+    await expect(syncProfile(d, two.id)).rejects.toThrow(SyncAccountError);
+    expect(d.st!.userId).toBe(one.id);
+    expect(d.ids()).toEqual(["p"]);
+    expect((await d.api.pull(0)).attempts).toEqual([]);
+    expect(await d.api.getProfile()).toBeNull();
+    d.api = apiFor(one.sub);
+    expect(await syncProgress(d, one.id)).toEqual({ pulled: 0, pushed: 0 });
+    await syncProfile(d, one.id);
+    expect(d.prof).toEqual({ name: "First account" });
   });
 
   it("profiles merge field by field between devices", async () => {
