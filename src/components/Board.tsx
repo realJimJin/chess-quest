@@ -15,12 +15,13 @@ interface Props {
   onMove?: (m: MoveInput) => void;
   lastMove?: [string, string] | null;
   highlights?: string[];
+  arrows?: { from: string; to: string }[];
   resetKey?: number;
 }
 
 const PROMO: [string, string][] = [["q", "♕"], ["r", "♖"], ["b", "♗"], ["n", "♘"]];
 
-export default function Board({ fen, orientation, interactive, onMove, lastMove, highlights, resetKey }: Props) {
+export default function Board({ fen, orientation, interactive, onMove, lastMove, highlights, arrows, resetKey }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const cg = useRef<Api | null>(null);
   const cb = useRef(onMove);
@@ -29,7 +30,6 @@ export default function Board({ fen, orientation, interactive, onMove, lastMove,
   // The tap that completes the pawn move also produces a click a moment later; clicks that
   // arrive this soon after the picker opens belong to that tap and must not act on the picker.
   const promoOpenedAt = useRef(0);
-  const promoReady = () => Date.now() - promoOpenedAt.current > 400;
   useEffect(() => { cb.current = onMove; fenRef.current = fen; });
 
   useEffect(() => {
@@ -57,9 +57,12 @@ export default function Board({ fen, orientation, interactive, onMove, lastMove,
           else cb.current?.({ from, to });
         } },
       },
-      drawable: { enabled: true, autoShapes: (highlights ?? []).map((sq) => ({ orig: sq as Key, brush: "green" })) },
+      drawable: { enabled: true, autoShapes: [
+        ...(highlights ?? []).map((sq) => ({ orig: sq as Key, brush: "green" })),
+        ...(arrows ?? []).map(a => ({ orig: a.from as Key, dest: a.to as Key, brush: "green" })),
+      ] },
     });
-  }, [fen, orientation, interactive, lastMove, highlights, resetKey]);
+  }, [fen, orientation, interactive, lastMove, highlights, arrows, resetKey]);
 
   const cancelPromo = () => { setPromo(null); cg.current?.set({ fen: fen.split(" ")[0] }); };
 
@@ -72,10 +75,10 @@ export default function Board({ fen, orientation, interactive, onMove, lastMove,
             <div className="flex gap-2">
               {PROMO.map(([p, glyph]) => (
                 <button key={p} data-testid={`promo-${p}`} className="btn h-14 w-14 text-4xl leading-none text-white"
-                  onClick={() => { if (!promoReady()) return; const m = promo; setPromo(null); cb.current?.({ ...m, promotion: p }); }}>{glyph}</button>
+                  onClick={() => { if (Date.now() - promoOpenedAt.current <= 400) return; const m = promo; setPromo(null); cb.current?.({ ...m, promotion: p }); }}>{glyph}</button>
               ))}
             </div>
-            <button className="btn btn-ghost text-xs" data-testid="promo-cancel" onClick={() => { if (promoReady()) cancelPromo(); }}>Cancel — take the move back</button>
+            <button className="btn btn-ghost text-xs" data-testid="promo-cancel" onClick={() => { if (Date.now() - promoOpenedAt.current > 400) cancelPromo(); }}>Cancel — take the move back</button>
           </div>
         </div>
       )}

@@ -17,6 +17,10 @@ These are sample counts, not all her lifetime games or theoretical variations. T
 
 ## Training behavior
 
+- The five day buttons now open a dedicated guided board lesson, move focus to its heading and bring it into view. Previously they silently changed filters lower on the same page.
+- 21 guided, sourced examples cover White's QGD, Slav, QGA, English, Nimzo, King's Indian, Sämisch, Four Pawns and Grünfeld; Black's Caro-Kann branches, Slav and flank responses. Day 5 reviews eight of those examples with both colors.
+- Watch mode demonstrates moves on the actual chessboard, draws arrows, explains each learner move and supports stepping backward/forward or pausing autoplay. Practice mode hides the moves, plays the opponent automatically, handles hints/retries and stores the result using the existing opening-progress interface.
+- Guided examples are a teaching selection. The full 1,059-game variation explorer remains available. No claim is made that every source game has manually authored teaching commentary.
 - Defaults to 2025–2026 tournament broadcasts; filters add online rapid/blitz or all games including bullet/daily.
 - White/Black, opening family, specific named variation, period and depth filters.
 - Learn mode exposes every recorded move and sample count; the user can choose both sides' moves. It does not grade learning as recall.
@@ -35,6 +39,8 @@ These are sample counts, not all her lifetime games or theoretical variations. T
 
 The existing 24-line standard-theory starter is no longer the default or presented as her verified repertoire. Eight guided model-game lessons remain available separately.
 
+Opening-family classification also now requires whole family names: a Dutch or King's Gambit is not a Queen's Gambit; the French Tarrasch is not a QGD; the King's Indian Attack is not the King's Indian Defense; “Yugoslav” does not match “Slav”. This corrects 56 family labels without changing source moves or game counts.
+
 ## Processing and exclusions
 
 27 nonstandard variants, four very short/ambiguous/starting-position records and one duplicate were excluded; no PGN parse failures remain. Broadcast textual headers sometimes have malformed quotes and trailing engine comments. The converter reads headers separately, strips comments, validates every factual move with chess.js, and normalizes decorative quotation marks in downloadable PGN headers. It does not repair or guess moves. Tournament clock fields can be inconsistent; unknown time classes are labeled unspecified instead of inferred from numbers such as 60+30.
@@ -43,4 +49,6 @@ The existing 24-line standard-theory starter is no longer the default or present
 
 ## Validation
 
-199 tests pass across all 17 suites, including every normalized opening's legality, every full-game PGN's re-import, source identity, direct broadcast fixtures, both-color practice and repeated-position frequencies. TypeScript and lint pass. The iOS static export and Capacitor sync pass; generated pages include the expanded repertoire and full PGN. Preview publication is tracked in the chat's output report. No real-device test is claimed while computer control is unavailable. Native TestFlight availability is separate from this preview update.
+Validation includes every normalized opening's legality, every full-game PGN's re-import, source identity, direct broadcast fixtures, both-color practice and repeated-position frequencies. Guided-lesson regression checks cover all five day buttons, focus/scroll, exact source moves, coaching-note coverage, the actual Chessground board and SVG arrows, demonstration pause/cancel, full recall with scoring, keyboard entry and mixed-color review. A full-corpus test exceeded its old 20-second limit when run concurrently with the iOS build; its per-move assertion overhead was removed and the data audit has a 60-second budget. The final suite runs with two workers, separately from the build.
+
+All 212 tests pass across 20 suites. TypeScript and lint pass. The iOS static export, Capacitor sync and UI export checks pass; generated pages include the guided lessons, expanded repertoire and full PGN. Preview publication is tracked in the chat's output report. No real-device or visual-browser test is claimed while computer control is unavailable. Native TestFlight availability is separate from this preview update.

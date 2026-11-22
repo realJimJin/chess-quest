@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Chess } from "chess.js";
 import { del, get, set } from "idb-keyval";
 import Board from "@/components/Board";
+import GuidedDay from "@/components/openings/GuidedDay";
+import { DAY_LESSONS } from "@/lib/openings/lessons";
 import type { MoveInput } from "@/lib/puzzle";
 import { coverage, graphFromLines, judge, pickReply, posKey, record, START_FEN, type DrillProgress, type Edge, type Repertoire, type Side } from "@/lib/openings/graph";
 import { gameLabel, selectGames, STUDY_DAYS, VERIFIED_GAMES, verifiedRepertoire, type GamePool } from "@/lib/openings/verified";
@@ -17,6 +19,7 @@ const pct = (x: number) => `${Math.round(x * 100)}%`;
 const movesText = (sans: string[]) => sans.map((s, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${s}` : s)).join(" ");
 
 export default function Openings() {
+  const [activeDay, setActiveDay] = useState<number | null>(null);
   const [pool, setPool] = useState<GamePool>("tournament");
   const [since, setSince] = useState("2025-01-01");
   const [trainingDepth, setTrainingDepth] = useState(12);
@@ -75,13 +78,13 @@ export default function Openings() {
 
   // the opponent answers from the repertoire's own lines or games
   useEffect(() => {
-    if (!node || node.mine || !node.edges.length || over || mode === "learn") return;
+    if (activeDay !== null || !node || node.mine || !node.edges.length || over || mode === "learn") return;
     const t = window.setTimeout(() => {
       const e = pickReply(graph, game.key, progress, Math.random());
       if (e) setGame((g) => (g.key === game.key ? play(g, e, false, false) : g));
     }, 450);
     return () => window.clearTimeout(t);
-  }, [node, graph, game.key, progress, play, mode, over]);
+  }, [node, graph, game.key, progress, play, mode, over, activeDay]);
 
   const onMove = (m: MoveInput) => {
     if (!myTurn) return;
@@ -116,14 +119,15 @@ export default function Openings() {
   };
 
   useEffect(() => {
+    if (activeDay !== null) return;
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (t && ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName)) return;
+      if (t?.closest("input, textarea, select, button, a, summary, [contenteditable]")) return;
       if (e.key === "r" || (over && (e.key === "Enter" || e.key === " "))) { e.preventDefault(); restart(); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [over, restart]);
+  }, [over, restart, activeDay]);
 
   const build = async () => {
     setImportMsg(null);
@@ -151,18 +155,22 @@ export default function Openings() {
     else { setGame(g=>play(g,e,false,false)); setFeedback(null); }
   };
 
+  if(activeDay !== null) return <GuidedDay key={activeDay} day={activeDay} onExit={()=>{setActiveDay(null);window.scrollTo({top:0,behavior:"instant"});}}/>;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Train Alisa’s actual openings</h1>
-        <p className="text-sm text-mute">Explore the recorded alternatives, then play them from memory. Choose tournament games first; add online games for wider coverage.</p>
+        <p className="text-sm text-mute">Start with a guided lesson: watch the moves on the board, learn the idea, then play the line yourself. The full variation explorer is below.</p>
       </div>
 
-      <details className="card p-4">
-        <summary className="cursor-pointer font-medium">Your five-day preparation plan</summary>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">{STUDY_DAYS.map((day,i)=><div key={day.title}><h2 className="font-medium">{day.title}</h2><p className="my-2 text-sm text-mute">{day.task}</p><button className="btn" onClick={()=>choose(()=>{setUseImported(false);setPool("rapid-blitz");setSince("2025-01-01");setSide(day.side);setGroups(day.groups);setVariation("");setTrainingDepth(i===0?8:12);setMode(i===4?"recall":"learn");})}>Train day {i+1}</button></div>)}</div>
-        <p className="mt-4 text-xs text-mute">Suggested coaching prompts, not quotations or a claim about her intentions. Practice both colors on the final day.</p>
-      </details>
+      <section className="card p-4" aria-labelledby="guided-plan-title">
+        <h2 id="guided-plan-title" className="font-medium">Your five-day opening lessons</h2>
+        <p className="mt-2 text-sm text-mute">Each button opens the board and starts a lesson. Day 5 mixes both colors for recall.</p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">{STUDY_DAYS.map((day,i)=><div key={day.title}><h3 className="font-medium">{day.title}</h3><p className="my-2 text-sm text-mute">{DAY_LESSONS[i].length} lessons · {day.task}</p><button className="btn btn-primary min-h-12" onClick={()=>setActiveDay(i)}>Train day {i+1}</button></div>)}</div>
+      </section>
+
+      <h2 className="text-xl font-medium">Explore all recorded variations</h2>
 
       <div className="card flex flex-col gap-3 p-4">
         <div className="flex flex-wrap items-center gap-2">

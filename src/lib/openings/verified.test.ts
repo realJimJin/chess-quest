@@ -13,16 +13,21 @@ describe("sourced Yunker repertoire", () => {
       expect(g[g.side]).toMatch(/Yunker/i);
       expect(g[g.side]).toMatch(/Alisa/i);
       const chess=new Chess();
-      for (const san of g.moves) expect(()=>chess.move(san),`${g.id}: ${san}`).not.toThrow();
+      expect(()=>{for (const san of g.moves) chess.move(san);},g.id).not.toThrow();
       expect(g.moves.length).toBeGreaterThanOrEqual(4);
       expect(g.moves.length).toBeLessThanOrEqual(40);
     }
-  });
+  },60_000); // Full-corpus legality audit, not a runtime-performance assertion.
   it("separates tournament games, rapid/blitz, bullet, daily and recent periods", () => {
     expect(selectGames("tournament", "").length).toBeGreaterThan(80);
     expect(selectGames("tournament", "").every(g=>g.source==="tournament")).toBe(true);
     expect(selectGames("rapid-blitz", "").every(g=>g.source==="tournament" || ["rapid","blitz"].includes(g.timeClass))).toBe(true);
     expect(selectGames("all", "2026-01-01", "black").every(g=>g.date>="2026-01-01"&&g.side==="black")).toBe(true);
+  });
+  it("does not confuse unrelated gambits or the French Tarrasch with queen’s-pawn openings",()=>{
+    expect(VERIFIED_GAMES.find(g=>g.id==="388ecadae5ff46d7")?.group).toBe("Dutch");
+    expect(VERIFIED_GAMES.find(g=>g.id==="484e248ab6dae333")?.group).toBe("French");
+    expect(VERIFIED_GAMES.find(g=>g.id==="3755cfda1c4af800")?.group).toBe("Réti / flank openings");
   });
   it("matches direct 2026 broadcasts including previously missing QGD and Slav branches", () => {
     const white=VERIFIED_GAMES.find(g=>g.url.endsWith('/VY0O4iaY'))!;
@@ -53,5 +58,5 @@ describe("sourced Yunker repertoire", () => {
     const games=pgn.split(/\n\s*(?=\[Event\s)/);
     expect(games.length).toBe(VERIFIED_GAMES.length);
     for(const game of games) expect(()=>new Chess().loadPgn(game,{strict:false})).not.toThrow();
-  });
+  },60_000);
 });
