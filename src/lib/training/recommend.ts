@@ -498,8 +498,10 @@ export function recommendTraining(input: TrainingInput): TrainingRecommendation 
       if (made.length) {
         const last = made[made.length - 1];
         last.minutes += left;
-        // new material exists but the goal is used up: say so on the block that took the last place
-        if (pick && budget <= 0 && !last.reasons.some((x) => x.code === "DAILY_GOAL")) last.reasons.push(goalReason(last.exerciseIds.length));
+        if (pick && budget === 0) {
+          if (!last.reasons.some(reason => reason.code === "DAILY_GOAL")) last.reasons.push(goalReason(last.exerciseIds.length));
+          last.reasons.push({ code: "DAILY_GOAL_REACHED", text: `Your daily goal of ${n(dailyGoal, "exercise")} is filled by the planned blocks, so no new material is added.`, data: { dailyGoal } });
+        }
       }
       else if (!pick) gap("NO_NEW_MATERIAL", `Every level in this area is cleared or already in today's plan (${completed} of ${pool.length} validated exercises completed); nothing new is left to add.`, { completed, trainableExercises: pool.length });
       else gap("DAILY_GOAL_REACHED", `Your daily goal of ${n(dailyGoal, "exercise")} is already filled by earlier blocks, so no exercises are added here.`, { dailyGoal });

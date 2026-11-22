@@ -14,12 +14,17 @@ export interface ProgressStore { load(): Promise<ProgressState>; save(s: Progres
 export const PROGRESS_KEY = "cst.progress.v1";
 /** Time of the last "reset progress" on this device, waiting to reach the cloud. */
 export const RESET_KEY = "cst.progress.reset";
+const resetKeyFor = (key: string) => key === PROGRESS_KEY ? RESET_KEY : `${key}.reset`;
+const readReset = (key: string) => Number(localStorage.getItem(resetKeyFor(key))) || 0;
 
 export function readProgress(key = PROGRESS_KEY): ProgressState {
   try {
     const raw = localStorage.getItem(key);
     const s = raw ? (JSON.parse(raw) as ProgressState) : null;
-    return s && s.version === 1 && Array.isArray(s.attempts) ? s : emptyProgress();
+    if (!s || s.version !== 1 || !Array.isArray(s.attempts)) return emptyProgress();
+    const resetAt = readReset(key);
+    const attempts = resetAt ? s.attempts.filter(a => a.ts > resetAt) : s.attempts;
+    return { version: 1, attempts, srs: rebuildSrs(attempts) };
   } catch { return emptyProgress(); }
 }
 /** Write without merging. For the sync engine, which has already merged. */
@@ -30,13 +35,27 @@ export class LocalProgressStore implements ProgressStore {
   constructor(key = PROGRESS_KEY) { this.key = key; }
   async load() { return readProgress(this.key); }
   async save(s: ProgressState) {
-    const attempts = mergeLocalSave(readProgress(this.key).attempts, s.attempts, Date.now());
-    writeProgress({ version: 1, attempts, srs: rebuildSrs(attempts) }, this.key);
+    this.persist(s);
+  }
+  /** Apply an intentional edit to the latest stored revision, not a screen's
+   * stale copy. In particular, successive reflection edits must retain `rev`. */
+  update(edit: (state: ProgressState) => ProgressState): ProgressState {
+    return this.persist(edit(readProgress(this.key)));
+  }
+  private persist(s: ProgressState): ProgressState {
+    const resetAt = readReset(this.key);
+    const incoming = resetAt ? s.attempts.filter(a => a.ts > resetAt) : s.attempts;
+    const attempts = mergeLocalSave(readProgress(this.key).attempts, incoming, Date.now());
+    const next: ProgressState = { version: 1, attempts, srs: rebuildSrs(attempts) };
+    writeProgress(next, this.key);
     notifyLocalWrite("progress");
+    return next;
   }
   async reset() {
+    // Persist the reset barrier first. If storage fails, do not erase the log
+    // without the marker needed to reject a later save from a stale tab.
+    localStorage.setItem(resetKeyFor(this.key), String(Date.now()));
     writeProgress(emptyProgress(), this.key);
-    try { localStorage.setItem(RESET_KEY, String(Date.now())); } catch { /* reset still applies locally */ }
     notifyLocalWrite("progress");
   }
 }

@@ -13,7 +13,7 @@ describe("migrations", () => {
     const again = await migrate(db, { dir: path.join(process.cwd(), "db", "migrations"), appRole: "cq_app" });
     expect(again).toEqual([]);
     const rows = await db.query("select name from schema_migrations order by name");
-    expect(rows.map((r) => r.name)).toEqual(["0001_core.sql", "0002_ingestion.sql", "0003_multiplayer.sql"]);
+    expect(rows.map((r) => r.name)).toEqual(["0001_core.sql", "0002_ingestion.sql", "0003_multiplayer.sql", "0004_ingestion_ownership.sql"]);
   });
 });
 
@@ -59,5 +59,15 @@ describe("row-level security", () => {
   it("battle tables are closed to user context", async () => {
     await asSystem(db, (q) => q.query("insert into battles (book_id, config, seed) values ('b', '{}', 's')"));
     expect(await asUser(db, alice, (q) => q.query("select * from battles"))).toEqual([]);
+  });
+  it("cannot attach an ingestion job to another user's private upload", async () => {
+    const [upload] = await asUser(db, bob, q => q.query<{ id: string }>("insert into uploads (user_id, storage_key, filename, content_type, size_bytes) values ($1, 'bob-private', 'book.pdf', 'application/pdf', 10) returning id", [bob]));
+    expect(await asUser(db, alice, q => q.query("select * from uploads"))).toEqual([]);
+    await expect(asUser(db, alice, q => q.query("insert into ingestion_jobs (user_id, upload_id) values ($1, $2)", [alice, upload.id]))).rejects.toThrow(/foreign key/);
+    const [job] = await asUser(db, bob, q => q.query<{ id: string }>("insert into ingestion_jobs (user_id, upload_id) values ($1, $2) returning id", [bob, upload.id]));
+    await expect(asUser(db, alice, q => q.query("insert into ingestion_events (user_id, job_id, kind) values ($1, $2, 'progress')", [alice, job.id]))).rejects.toThrow(/foreign key/);
+    expect(await asUser(db, alice, q => q.query("select * from ingestion_jobs"))).toEqual([]);
+    await asUser(db, bob, q => q.query("insert into ingestion_events (user_id, job_id, kind) values ($1, $2, 'progress')", [bob, job.id]));
+    expect(await asUser(db, alice, q => q.query("select * from ingestion_events"))).toEqual([]);
   });
 });

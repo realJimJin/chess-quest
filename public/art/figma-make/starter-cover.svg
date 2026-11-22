@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="324" viewBox="0 0 240 324" role="img" aria-label="The Starter Collection by Chess Quest, volume 01">
+      <path d="M8 0v324" stroke="#1b3634" stroke-opacity=".25" />
+      <rect x="16" y="16" width="208" height="292" fill="none" stroke="#264444" stroke-opacity=".4" />
+      <g fill="#192c32">
+        <text x="33" y="44" font-family="'DM Sans', sans-serif" font-size="10" letter-spacing="2">CHESS QUEST</text>
+        <g font-family="Georgia, serif" font-weight="bold" font-size="34">
+          <text x="32" y="91" textLength="174" lengthAdjust="spacingAndGlyphs">The Starter</text>
+          <text x="32" y="125" textLength="158" lengthAdjust="spacingAndGlyphs">Collection</text>
+        </g>
+      </g>
+      <g transform="translate(42 132) scale(.87)">
+        <circle cx="90" cy="90" r="77" fill="none" stroke="#314d49" stroke-width=".6" />
+        <circle cx="90" cy="90" r="62" fill="none" stroke="#314d49" stroke-width=".6" />
+        <path d="M35 145L145 35M20 90h140M90 15v150" stroke="#314d49" stroke-width=".5" />
+        <path d="M57 42h16v16h10V42h15v16h10V42h16v34l-13 12 7 48H64l7-48-14-12z" fill="#243e3a" />
+        <path d="M59 137h65v10H59zM72 80h38M77 91l-4 37" fill="none" stroke="#c9ba94" stroke-width="2" />
+      </g>
+      <path d="M32 286h176" stroke="#264444" stroke-opacity=".4" />
+      <g fill="#192c32" font-family="'DM Sans', sans-serif" font-size="8">
+        <text x="32" y="300" letter-spacing=".3">THE FOUNDATIONS</text>
+        <text x="208" y="300" text-anchor="end">VOL. 01</text>
+      </g>
+    </svg>

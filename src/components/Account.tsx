@@ -10,7 +10,7 @@ const DOT = { idle: "bg-good", syncing: "bg-accent animate-pulse", error: "bg-ba
 export function AccountChip() {
   const s = useSync();
   const path = usePathname();
-  if (!s.configured) return null;
+  if (!s.configured) return <span className="local-status">On this device</span>;
   if (!s.user) return <a href={`/auth/login?returnTo=${encodeURIComponent(path)}`} className="btn whitespace-nowrap text-sm" data-testid="sign-in">Sign in</a>;
   return (
     <Link href="/profile" className="flex items-center gap-2 whitespace-nowrap rounded-lg px-2 py-1.5 text-sm text-mute hover:text-ink" title={s.error || LABEL[s.phase]} data-testid="account">

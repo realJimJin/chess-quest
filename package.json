@@ -17,7 +17,8 @@
     "test:extraction": "extraction/.venv/bin/python -m pytest extraction/tests -q -p no:warnings",
     "extract": "cd extraction && .venv/bin/python -m csx.cli",
     "build:ios": "bash scripts/build-ios.sh",
-    "ios:open": "cap open ios"
+    "ios:open": "cap open ios",
+    "check:ui-export": "node scripts/check-ui-export.mjs"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.33.0",
@@ -38,6 +39,8 @@
     "@capacitor/cli": "^8.6.2",
     "@electric-sql/pglite": "^0.5.17",
     "@tailwindcss/turbopack": "4.3.3",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.13",
     "@types/node": "^20",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
@@ -45,6 +48,8 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
+    "fake-indexeddb": "^6.2.8",
+    "jsdom": "^29.1.1",
     "tailwindcss": "4.3.3",
     "typescript": "^5",
     "vitest": "^4.1.12"
