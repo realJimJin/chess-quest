@@ -1,4 +1,4 @@
-# Offline opening trainer — iOS build 3
+# Offline opening trainer — iOS 1.0.1 build 3
 
 The Openings tab adds eight game-based lines from Alisa Genrietta Yunker's public game scores. Three train White, five train Black. All moves and original teaching notes ship in the app; no account, engine download, or network connection is needed to practice. Source links need internet access.
 
@@ -22,3 +22,5 @@ The Openings tab adds eight game-based lines from Alisa Genrietta Yunker's publi
 The exported iOS app was exercised locally at 393 × 852: a Black-side Caro-Kann practice used actual board taps, a legal alternative, SAN entry, automatic replies, completion, and reload persistence. No console errors were observed. Static export checks include the Openings navigation, route, CSS module classes, and the synchronized Capacitor page. Native archive, simulator, and TestFlight evidence is kept with the build 3 release artifacts outside the source tree.
 
 Release branch: `codex/ios-opening-trainer`. This work must not be merged to `main` without the user's instruction.
+
+The release version is 1.0.1 because Apple closed the 1.0 upload train after approving build 2. The matching public source tag is `v1.0.1-build3`.
