@@ -5,6 +5,11 @@ import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 const library = await readFile("out/index.html", "utf8");
+assert(/href="\/openings\/?"/.test(library), "Opening trainer is missing from iOS navigation");
+const openings = await readFile("out/openings/index.html", "utf8");
+assert(openings.includes("THE OPENING ROOM") && openings.includes("Learn line"), "Opening catalog is missing from iOS export");
+assert(!openings.includes('class="undefined"'), "Opening CSS module exports were lost");
+assert.equal(await readFile("ios/App/App/public/openings/index.html", "utf8"), openings, "Capacitor has a stale opening trainer");
 assert(!library.includes('href="/battles/"'), "Unfinished Battles navigation reached the iOS release");
 assert(!library.includes("Discover Book Battles"), "Unfinished Battles promotion reached the iOS release");
 const battles = await readFile("out/battles/index.html", "utf8").catch(() => "");

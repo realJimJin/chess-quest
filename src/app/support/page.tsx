@@ -1,6 +1,6 @@
 export const metadata = { title: "Support — Chess Quest" };
 const REPOSITORY = "https://github.com/realJimJin/chess-quest";
-const SOURCE = process.env.NEXT_PUBLIC_TARGET === "ios" ? `${REPOSITORY}/tree/v1.0-build2` : REPOSITORY;
+const SOURCE = process.env.NEXT_PUBLIC_TARGET === "ios" ? `${REPOSITORY}/tree/v1.0-build3` : REPOSITORY;
 const EMAIL =process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "jimjin135@gmail.com";
 
 export default function Support() {

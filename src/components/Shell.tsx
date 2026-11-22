@@ -8,6 +8,7 @@ import QuestIcon, { type IconName } from "./QuestIcon";
 const NAV: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Library", icon: "book" },
   { href: "/today", label: "Training", icon: "target" },
+  { href: "/openings", label: "Openings", icon: "knight" },
   { href: "/world", label: "Journey", icon: "map" },
   { href: "/battles", label: "Battles", icon: "swords" },
 ];

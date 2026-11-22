@@ -78,7 +78,7 @@ This release contains solo training only. Multiplayer previews, account sign-in 
 
 Importing your own exercises (Library > Import a book) reads a JSON file from Files and stores it on the device only. The app makes no network requests and collects no data.
 
-Chess Quest is open source under the GNU GPL v3 (or later). The full source is public at https://github.com/realJimJin/chess-quest/tree/v1.0-build2, and the license notice is on the Support & license screen, linked from the bottom of every screen. It includes the chessground board and the Stockfish engine, both GPL v3.
+Chess Quest is open source under the GNU GPL v3 (or later). The full source is public at https://github.com/realJimJin/chess-quest/tree/v1.0-build3, and the license notice is on the Support & license screen, linked from the bottom of every screen. It includes the chessground board and the Stockfish engine, both GPL v3.
 
 ## Before you submit
 - The support page shows jimjin135@gmail.com as the contact address.
