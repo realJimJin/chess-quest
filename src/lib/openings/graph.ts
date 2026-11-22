@@ -29,19 +29,24 @@ export const sanList = (moves: string): string[] => moves.replace(/\d+\.(\.\.)?/
 export function addMoves(g: Graph, sans: string[], line = "", weight = 1, maxPlies = 80): number {
   const c = new Chess();
   let plies = 0;
+  const touched = new Set<Pos>();
+  const counted = new Set<string>();
   for (const san of sans.slice(0, maxPlies)) {
     const fen = c.fen(), key = posKey(fen);
     let mv;
     try { mv = c.move(san, { strict: false }); } catch { break; }
     const node = (g.nodes[key] ??= { fen, mine: (fen.split(" ")[1] === "w") === (g.side === "white"), edges: [] });
+    touched.add(node);
     const uci = mv.from + mv.to + (mv.promotion ?? "");
     let e = node.edges.find((x) => x.uci === uci);
     if (!e) { e = { uci, san: mv.san, to: posKey(c.fen()), count: 0, lines: [] }; node.edges.push(e); }
-    e.count += weight;
+    // A repeated position in one game is still one source game, not two votes.
+    const vote = `${key}|${uci}`;
+    if (!counted.has(vote)) { e.count += weight; counted.add(vote); }
     if (line && !e.lines.includes(line) && e.lines.length < 8) e.lines.push(line);
     plies++;
   }
-  for (const n of Object.values(g.nodes)) n.edges.sort((a, b) => b.count - a.count || a.san.localeCompare(b.san));
+  for (const n of touched) n.edges.sort((a, b) => b.count - a.count || a.san.localeCompare(b.san));
   return plies;
 }
 
