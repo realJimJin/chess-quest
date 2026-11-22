@@ -12,20 +12,23 @@ export const emptyProgress = (): ProgressState => ({ version: 1, attempts: [], s
 export interface ProgressStore { load(): Promise<ProgressState>; save(s: ProgressState): Promise<void>; reset(): Promise<void> }
 
 export const PROGRESS_KEY = "cst.progress.v1";
-/** Time of the last "reset progress" on this device, waiting to reach the cloud. */
+/** Permanent reset barrier, including resets received from another device. */
 export const RESET_KEY = "cst.progress.reset";
 const resetKeyFor = (key: string) => key === PROGRESS_KEY ? RESET_KEY : `${key}.reset`;
 const readReset = (key: string) => Number(localStorage.getItem(resetKeyFor(key))) || 0;
 
-export function readProgress(key = PROGRESS_KEY): ProgressState {
+export function readProgress(key = PROGRESS_KEY, strict = false): ProgressState {
   try {
     const raw = localStorage.getItem(key);
     const s = raw ? (JSON.parse(raw) as ProgressState) : null;
-    if (!s || s.version !== 1 || !Array.isArray(s.attempts)) return emptyProgress();
+    if (!s || s.version !== 1 || !Array.isArray(s.attempts)) {
+      if (strict && raw !== null) throw new Error("Invalid saved progress");
+      return emptyProgress();
+    }
     const resetAt = readReset(key);
     const attempts = resetAt ? s.attempts.filter(a => a.ts > resetAt) : s.attempts;
     return { version: 1, attempts, srs: rebuildSrs(attempts) };
-  } catch { return emptyProgress(); }
+  } catch (error) { if (strict) throw error; return emptyProgress(); }
 }
 /** Write without merging. For the sync engine, which has already merged. */
 export function writeProgress(s: ProgressState, key = PROGRESS_KEY) { localStorage.setItem(key, JSON.stringify(s)); }
@@ -54,7 +57,7 @@ export class LocalProgressStore implements ProgressStore {
   async reset() {
     // Persist the reset barrier first. If storage fails, do not erase the log
     // without the marker needed to reject a later save from a stale tab.
-    localStorage.setItem(resetKeyFor(this.key), String(Date.now()));
+    localStorage.setItem(resetKeyFor(this.key), String(Math.max(Date.now(), readReset(this.key))));
     writeProgress(emptyProgress(), this.key);
     notifyLocalWrite("progress");
   }

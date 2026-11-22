@@ -4,6 +4,8 @@ import { asSystem, type Db } from "../db";
 import { verifyBearer, type Caller } from "../auth";
 import { dueGet, me, profileGet, profilePut, progressGet, progressPost, type Deps } from "../http";
 import { testDb } from "./helpers";
+import { ensureUser } from "../users";
+import { SYNC_ACCOUNT_HEADER } from "../../lib/cloud/errors";
 
 const BASE = "https://app.example.test";
 let db: Db;
@@ -18,6 +20,15 @@ const send = (path: string, method: string, body: unknown, headers: Record<strin
   req(path, { method, body: typeof body === "string" ? body : JSON.stringify(body), headers: { "content-type": "application/json", ...headers } });
 const att = (exerciseId: string, ts = Date.now() - 60_000) =>
   ({ exerciseId, ts, mode: "flow", result: "solved", timeMs: 1234, wrongMoves: [], offBookMoves: [], hintLevel: 0, finished: true });
+async function browser(sub: string) {
+  const who = cookie(sub), id = await ensureUser(db, who.identity);
+  const bound = (r: Request) => { r.headers.set(SYNC_ACCOUNT_HEADER, id); return r; };
+  return {
+    a: deps(who), id,
+    req: (...args: Parameters<typeof req>) => bound(req(...args)),
+    send: (...args: Parameters<typeof send>) => bound(send(...args)),
+  };
+}
 
 describe("sync routes", () => {
   it("answer 501 when accounts are not set up, and 401 when signed out", async () => {
@@ -30,7 +41,7 @@ describe("sync routes", () => {
   });
 
   it("push then pull round-trips, and each account sees only its own attempts", async () => {
-    const a = deps(cookie("auth0|http-a")), b = deps(cookie("auth0|http-b"));
+    const { a, req, send } = await browser("auth0|http-a"), b = await browser("auth0|http-b");
     const push = await progressPost(send("/api/sync/progress", "POST", { attempts: [att("x1"), att("x2", Date.now() - 30_000)] }, { origin: BASE }), a);
     expect(push.status).toBe(200);
     const pushed = await push.json();
@@ -39,14 +50,14 @@ describe("sync routes", () => {
     expect(mine.attempts.map((x: { exerciseId: string }) => x.exerciseId).sort()).toEqual(["x1", "x2"]);
     expect(mine.cursor).toBe(pushed.cursor);
     expect((await (await progressGet(req(`/api/sync/progress?after=${mine.cursor}`), a)).json()).attempts).toEqual([]);
-    expect((await (await progressGet(req("/api/sync/progress"), b)).json()).attempts).toEqual([]);
+    expect((await (await progressGet(b.req("/api/sync/progress"), b.a)).json()).attempts).toEqual([]);
     expect((await dueGet(req("/api/sync/due"), a)).status).toBe(200);
     const who = await (await me(req("/api/me"), a)).json();
     expect(who.user).toMatchObject({ email: "auth0|http-a@example.test", name: "auth0|http-a" });
   });
 
   it("rejects bad input with a 4xx and a message", async () => {
-    const a = deps(cookie("auth0|http-bad"));
+    const { a, req, send } = await browser("auth0|http-bad");
     expect((await progressGet(req("/api/sync/progress?after=-1"), a)).status).toBe(400);
     expect((await progressGet(req("/api/sync/progress?after=abc"), a)).status).toBe(400);
     expect((await progressPost(send("/api/sync/progress", "POST", "{nope"), a)).status).toBe(400);
@@ -58,12 +69,13 @@ describe("sync routes", () => {
   });
 
   it("refuses cookie-backed writes from another site but allows bearer callers", async () => {
+    const { a, req, send } = await browser("auth0|http-c");
     const evil = { origin: "https://evil.example" };
     const body = { attempts: [att("csrf")] };
-    expect((await progressPost(send("/api/sync/progress", "POST", body, evil), deps(cookie("auth0|http-c")))).status).toBe(403);
-    expect((await progressPost(send("/api/sync/progress", "POST", body, { "sec-fetch-site": "cross-site" }), deps(cookie("auth0|http-c")))).status).toBe(403);
-    expect((await progressGet(req("/api/sync/progress"), deps(cookie("auth0|http-c")))).status).toBe(200);
-    expect((await (await progressGet(req("/api/sync/progress"), deps(cookie("auth0|http-c")))).json()).attempts).toEqual([]);
+    expect((await progressPost(send("/api/sync/progress", "POST", body, evil), a)).status).toBe(403);
+    expect((await progressPost(send("/api/sync/progress", "POST", body, { "sec-fetch-site": "cross-site" }), a)).status).toBe(403);
+    expect((await progressGet(req("/api/sync/progress"), a)).status).toBe(200);
+    expect((await (await progressGet(req("/api/sync/progress"), a)).json()).attempts).toEqual([]);
     expect((await progressPost(send("/api/sync/progress", "POST", body, { origin: "capacitor://localhost" }), deps(bearer("auth0|http-c")))).status).toBe(200);
   });
 
@@ -75,7 +87,7 @@ describe("sync routes", () => {
   });
 
   it("profile saves with a version and answers 409 to a stale save", async () => {
-    const a = deps(cookie("auth0|http-p"));
+    const { a, req, send } = await browser("auth0|http-p");
     expect(await (await profileGet(req("/api/sync/profile"), a)).json()).toEqual({ profile: null });
     const first = await profilePut(send("/api/sync/profile", "PUT", { data: { name: "Jo" }, baseVersion: 0 }), a);
     expect(first.status).toBe(200);
@@ -87,12 +99,58 @@ describe("sync routes", () => {
   });
 
   it("hides internal errors behind a 500", async () => {
+    const { a, req } = await browser("auth0|http-x");
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    const broken: Deps = { ...deps(cookie("auth0|http-x")), db: async () => { throw new Error("secret connection string"); } };
+    const broken: Deps = { ...a, db: async () => { throw new Error("secret connection string"); } };
     const r = await progressGet(req("/api/sync/progress"), broken);
     expect(r.status).toBe(500);
     expect(JSON.stringify(await r.json())).not.toContain("secret");
     log.mockRestore();
+  });
+
+  it("requires older cookie clients to reload before any sync reads or writes", async () => {
+    const a = deps(cookie("auth0|unbound"));
+    const responses = await Promise.all([
+      progressGet(req("/api/sync/progress"), a),
+      progressPost(send("/api/sync/progress", "POST", { attempts: [att("old-tab")] }), a),
+      profileGet(req("/api/sync/profile"), a),
+      profilePut(send("/api/sync/profile", "PUT", { data: { name: "Old tab" }, baseVersion: 0 }), a),
+      dueGet(req("/api/sync/due"), a),
+    ]);
+    for (const r of responses) {
+      expect(r.status).toBe(428);
+      expect((await r.json()).error).toBe("account-required");
+    }
+    expect((await me(req("/api/me"), a)).status).toBe(200);
+  });
+
+  it("rejects a stale tab's reads, saves and resets after another account signs in", async () => {
+    const first = await browser("auth0|switch-one"), second = await browser("auth0|switch-two");
+    await progressPost(second.send("/api/sync/progress", "POST", { attempts: [att("second-only")] }), second.a);
+    await profilePut(second.send("/api/sync/profile", "PUT", { data: { name: "Second" }, baseVersion: 0 }), second.a);
+    // The request still expects the first account, but its cookie now identifies the second.
+    const responses = await Promise.all([
+      progressGet(first.req("/api/sync/progress"), second.a),
+      progressPost(first.send("/api/sync/progress", "POST", { attempts: [att("first-only")] }), second.a),
+      progressPost(first.send("/api/sync/progress", "POST", { attempts: [], resetAt: Date.now() }), second.a),
+      profileGet(first.req("/api/sync/profile"), second.a),
+      profilePut(first.send("/api/sync/profile", "PUT", { data: { name: "First" }, baseVersion: 1 }), second.a),
+      dueGet(first.req("/api/sync/due"), second.a),
+    ]);
+    for (const r of responses) {
+      expect(r.status).toBe(409);
+      expect((await r.json()).error).toBe("account-changed");
+    }
+    const progress = await (await progressGet(second.req("/api/sync/progress"), second.a)).json();
+    expect(progress.attempts.map((a: { exerciseId: string }) => a.exerciseId)).toEqual(["second-only"]);
+    expect(progress.resetAt).toBe(0);
+    expect((await (await profileGet(second.req("/api/sync/profile"), second.a)).json()).profile.data).toEqual({ name: "Second" });
+  });
+
+  it("keeps bearer clients working without a browser header, but checks one if supplied", async () => {
+    const a = deps(bearer("auth0|native"));
+    expect((await progressPost(send("/api/sync/progress", "POST", { attempts: [] }), a)).status).toBe(200);
+    expect((await progressGet(req("/api/sync/progress", { headers: { [SYNC_ACCOUNT_HEADER]: "wrong-account" } }), a)).status).toBe(409);
   });
 });
 

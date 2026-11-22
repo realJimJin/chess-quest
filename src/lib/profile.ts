@@ -42,9 +42,13 @@ export function loadProfile(): PlayerProfile {
 export function saveProfile(p: PlayerProfile) { try { localStorage.setItem(KEY, JSON.stringify(p)); notifyLocalWrite("profile"); } catch { /* ignore */ } }
 /** The saved profile exactly as stored, or null if nothing was ever saved. For sync. */
 export function readStoredProfile(): Record<string, unknown> | null {
-  try { const v = JSON.parse(localStorage.getItem(KEY) ?? "null"); return v && typeof v === "object" && !Array.isArray(v) ? v : null; } catch { return null; }
+  const raw = localStorage.getItem(KEY);
+  if (raw === null) return null;
+  const v: unknown = JSON.parse(raw);
+  if (!v || typeof v !== "object" || Array.isArray(v)) throw new Error("Invalid saved profile");
+  return v as Record<string, unknown>;
 }
-export function writeStoredProfile(d: Record<string, unknown>) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch { /* ignore */ } }
+export function writeStoredProfile(d: Record<string, unknown>) { localStorage.setItem(KEY, JSON.stringify(d)); }
 
 // Rating milestones are personal goals the player ticks off after earning them
 // over the board. The app never awards a rating or a title.
