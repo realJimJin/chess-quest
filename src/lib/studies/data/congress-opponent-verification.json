@@ -1,0 +1,125 @@
+{
+  "checked": "2026-11-22",
+  "summary": "Confirmed opponent evidence currently covers Lockett’s linked online account and DeDona’s tournament scores. The other players have different levels of evidence; open their identity check below. General Yunker chapters are preparation, not proof of an opponent’s repertoire.",
+  "players": [
+    {
+      "id": "lockett",
+      "name": "Justin B Lockett",
+      "uscf": "14994893",
+      "status": "Verified account",
+      "finding": "The Mechanics’ Institute organizer table directly links Justin Lockett, US Chess 14994893 and MrLockettEsquire. The study’s online scores come from that account.",
+      "limit": "These are observed online choices. They do not guarantee his tournament move order or cover every variation.",
+      "sources": [
+        { "title": "Organizer’s name / US Chess ID / username table", "url": "https://www.milibrary.org/chess/tournament-archive/Mechanics-Monthly-Online-Blitz-Championship" },
+        { "title": "Public game archive", "url": "https://api.chess.com/pub/player/mrlockettesquire/games/archives" }
+      ]
+    },
+    {
+      "id": "dedona",
+      "name": "Chris DeDona",
+      "uscf": "16078015",
+      "status": "Verified tournament scores",
+      "finding": "Five distinct over-the-board scores were recovered from the organizer-linked 2025–26 Magnus League broadcasts. His three White games use an early Bg5/Bxf6 setup; two Black games are French Advance positions.",
+      "limit": "No reliable Black response to 1.d4 was recovered. The candidate online account tiger1420 remains unverified and is not the basis of these opening claims.",
+      "sources": [
+        { "title": "Magnus League organizer and game broadcasts", "url": "http://chesscenter.cc/Magnus-11/MagnusLeague-2025-2026-Updates.htm" },
+        { "title": "US Chess player record", "url": "https://ratings.uschess.org/player/16078015" }
+      ]
+    },
+    {
+      "id": "ruttle",
+      "name": "Tanner J Ruttle",
+      "uscf": "32221956",
+      "status": "Probable account — not directly verified",
+      "finding": "TannerR_Cba publicly identifies itself as Tanner Ruttle in New Jersey. The CBA initials agree with published school chess results, and those results agree with his tournament identity. This independently strengthens the match.",
+      "limit": "No public organizer or federation record directly linking US Chess 32221956 to TannerR_Cba was recovered. Treat the account’s openings as conditional scouting evidence.",
+      "sources": [
+        { "title": "Public Lichess profile data", "url": "https://lichess.org/api/user/TannerR_Cba" },
+        { "title": "School’s tournament report", "url": "https://www.cbalincroftnj.org/about-cba/news/post-details/~board/cba-news/post/chess-students-compete-in-regional-championship" },
+        { "title": "2026 organizer team results", "url": "https://www.kingregistration.com/results/2026grademetros/team/10" },
+        { "title": "US Chess player record", "url": "https://ratings.uschess.org/player/32221956" }
+      ]
+    },
+    {
+      "id": "reichfeld",
+      "name": "Gal Reichfeld",
+      "uscf": "31573205",
+      "status": "Strong pairing match — inferred identity",
+      "finding": "Galgolon’s February 15, 2025 DMV games align with Gal Reichfeld’s official event opponents, colors and played results. The fifth round is a recorded online loss but an official forfeit win; that distinction is retained. October DMV registration and online results provide additional support.",
+      "limit": "This is an inference from event records, not an explicit published name-to-username link. Keep its opening observations conditional.",
+      "sources": [
+        { "title": "Official February event cross-table", "url": "https://uschess.org/msa/XtblMain.php?202502154302.2" },
+        { "title": "February Lichess event", "url": "https://lichess.org/swiss/eKpsHpYK" },
+        { "title": "October organizer registration with US Chess IDs", "url": "https://caissachess.net/register/7547/players" },
+        { "title": "October Lichess event", "url": "https://lichess.org/swiss/p6xVVPzB" }
+      ]
+    },
+    {
+      "id": "narayana",
+      "name": "Narayana Gaddam",
+      "uscf": "31539319",
+      "status": "Opening evidence unverified",
+      "finding": "His tournament identity and 2025 Congress result are confirmed. The only indexed opening fragment attached to his exact US Chess ID is 1.e4 e5 2.Nc3 Nc6 3.Nf3. Its opponent and original full score were not available for verification.",
+      "limit": "The same-name Lichess account narayanagaddam has no public identity link. Neither that account nor the short database fragment establishes his Caro-Kann response or Black repertoire. No verified full tournament score was recovered.",
+      "sources": [
+        { "title": "Official 2025 Congress standings", "url": "https://chessevents.com/event/nationalchesscongress/2025/standings/u1800" },
+        { "title": "Exact-ID database fragment — secondary and unverified", "url": "https://www.snoopchess.com/snoop/uscf/31539319" },
+        { "title": "Candidate account’s public profile data", "url": "https://lichess.org/api/user/narayanagaddam" }
+      ]
+    },
+    {
+      "id": "radhakrishnan",
+      "name": "Abhinav Radhakrishnan",
+      "uscf": "32638134",
+      "status": "No attributable opening score found",
+      "finding": "US Chess 32638134 links the entrant to FIDE 566002435. Official history includes Columbia and NYU collegiate events, providing a better search route than matching first names in game databases.",
+      "limit": "No public online handle or original game score was recovered from those leads. Games belonging to other Abhinavs or other Radhakrishnans are excluded. These chapters remain your general Yunker preparation.",
+      "sources": [
+        { "title": "US Chess identity and event history", "url": "https://ratings.uschess.org/player/32638134" },
+        { "title": "Linked FIDE record", "url": "https://ratings.fide.com/profile/566002435" },
+        { "title": "2026 World Open standings", "url": "https://chessevents.com/event/worldopen/2026/standings/u1800" }
+      ]
+    },
+    {
+      "id": "sisler",
+      "name": "Benjamin David Sisler",
+      "uscf": "15606196",
+      "status": "Candidate account — not verified",
+      "finding": "The benny_wins profile says Ben Sisler and belongs to the Kava Social chess club, matching a club in his tournament history. It also played US Chess-rated online events. These are supporting clues, not a direct ID match.",
+      "limit": "No accessible result table directly linking benny_wins to US Chess 15606196 was recovered. Its games have not been added as verified Sisler preparation. His current opening repertoire remains unresolved.",
+      "sources": [
+        { "title": "US Chess player record", "url": "https://ratings.uschess.org/player/15606196" },
+        { "title": "Candidate profile: Ben Sisler", "url": "https://api.chess.com/pub/player/benny_wins" },
+        { "title": "Candidate account’s public club memberships", "url": "https://api.chess.com/pub/player/benny_wins/clubs" },
+        { "title": "Kava Social organizer registration", "url": "https://chessregister.com/registrants?event_key=an8otSLn4YOjmgmrsX97Ks1V04Ucuw73-2nkGVypuPY%3D" },
+        { "title": "Candidate’s January 2017 US Chess online event", "url": "https://api.chess.com/pub/tournament/-us-chess-1510-rapid-769539" }
+      ]
+    },
+    {
+      "id": "keaton",
+      "name": "John Ray Keaton",
+      "uscf": "12559512",
+      "status": "No usable opening score found",
+      "finding": "The player record and FIDE 39908895 establish the tournament identity. The recovered Rea–Keaton example starts in the endgame. Main Line club and older Masterminds reports add tournament context but no attributable opening moves.",
+      "limit": "An opening code in an endgame article does not reconstruct a game score. No opening has been assigned to him from that label, and results recorded as byes are not treated as played wins.",
+      "sources": [
+        { "title": "US Chess player record", "url": "https://ratings.uschess.org/player/12559512" },
+        { "title": "US Chess Rea–Keaton endgame article", "url": "https://new.uschess.org/news/world-open-preview" },
+        { "title": "Original Masterminds club newsletter", "url": "https://sites.pitt.edu/~schach/News/PA/200401Masterminds.pdf" }
+      ]
+    },
+    {
+      "id": "bustillo",
+      "name": "Joaquin Bustillo",
+      "uscf": "12542774",
+      "status": "Current repertoire unverified",
+      "finding": "The older database results come from 2003–04 internet events, including Dos Hermanas 8+2 sections. A newer World Chess profile named joaquinbustillo2060 exists, but its public profile has no linked FIDE ID.",
+      "limit": "The old fast games do not establish a current repertoire, and the newer account is not independently tied to this entrant. Neither is being promoted to confirmed opponent preparation.",
+      "sources": [
+        { "title": "US Chess player record", "url": "https://ratings.uschess.org/player/12542774" },
+        { "title": "Historical game index and event names", "url": "https://www.chessbites.com/PlayerProfile.aspx?player=Bustillo%2C+Joaquin" },
+        { "title": "Unverified World Chess account", "url": "https://worldchess.com/@joaquinbustillo2060" }
+      ]
+    }
+  ]
+}

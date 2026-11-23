@@ -6,6 +6,8 @@ The study contains 55 chapters: 27 original Yunker games and 28 opponent/earlier
 
 The Benko chapters include her recorded 5.b6, 5.e3, and 5.bxa6 choices. These games establish that she played each move, not that any is her exclusive or preferred repertoire. The 5.b6 game was independently rechecked against the public November 2026 Chess.com archive during this update.
 
+Each of the nine opponent sections now includes an identity check, the evidence, the unresolved gap and direct source links. These live in `src/lib/studies/data/congress-opponent-verification.json`, independently of the game generator, so rebuilding the study preserves the verification record. The November 22 follow-up did not establish additional definitive account matches or add unverified games. Lockett's account and DeDona's original tournament scores remain confirmed; Ruttle and Reichfeld remain conditional matches. Sisler has a stronger candidate lead, while Narayana, Radhakrishnan, Keaton and Bustillo still lack verified usable current opening scores.
+
 ## Source checks
 
 `CONGRESS_SOURCE_AUDIT.json` records the original file hash and individual game hash for every Yunker chapter. The generator checks original cached Chess.com archives or Lichess broadcast PGNs, confirms her linked account/FIDE identity and color, replays every move, and compares the existing corpus. It retains original move orders. Three coaching-only chapters were excluded, and three previously rearranged move orders were restored. Opponent move-prefix counts are recomputed rather than treating transpositions as identical sequences.

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Board from '../Board';
 import MoveEntry from '../training/MoveEntry';
 import type { MoveInput } from '@/lib/puzzle';
-import { CONGRESS, compileChapter, congressProgressStore, practicePlies, progressKey, type CongressProgressStore, type StudyChapter } from '@/lib/studies/congress';
+import { CONGRESS, CONGRESS_OPPONENT_VERIFICATION, compileChapter, congressProgressStore, practicePlies, progressKey, type CongressProgressStore, type StudyChapter } from '@/lib/studies/congress';
 import styles from './congress.module.css';
 
 export default function CongressStudy({ progressStore = congressProgressStore }: { progressStore?: CongressProgressStore }) {
@@ -15,6 +15,7 @@ export default function CongressStudy({ progressStore = congressProgressStore }:
   const [storageError, setStorageError] = useState<'load' | 'save' | null>(null);
   const chapter = CONGRESS.chapters.find(c => c.id === id)!;
   const visible = CONGRESS.chapters.filter(c => c.groups.includes(group));
+  const verification = CONGRESS_OPPONENT_VERIFICATION.players.find(p => p.id === group);
   // Storage is loaded after SSR; never write over unreadable existing data.
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function CongressStudy({ progressStore = congressProgressStore }:
       <a className="btn" href="/studies/philidalphia-national-congress.pgn" download>Download study PGN</a>
     </header>
     <p className={styles.scope}>55 chapters · 27 source-checked Yunker games · 222 opening moves to practice. Every Yunker line keeps her original move order. This is a selected sample of her games, not every variation she has ever played.</p>
+    <p className={styles.scope}>{CONGRESS_OPPONENT_VERIFICATION.summary}</p>
     {storageError && <div className="notice-error" role="alert">{storageError === 'load' ? 'Saved study progress could not be read. You can practice; existing progress will not be overwritten.' : 'Your result is in memory but could not be saved on this device.'} <button className="btn" onClick={retry}>Retry saving</button></div>}
     <div className={styles.layout}>
       <aside className={styles.sidebar}>
@@ -56,6 +58,13 @@ export default function CongressStudy({ progressStore = congressProgressStore }:
           if (first) select(first);
         }}>{CONGRESS.groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select></label>
         <p className={styles.groupNote}>{CONGRESS.groups.find(g => g.id === group)?.summary}</p>
+        {verification && <details key={group} className={styles.groupNote}>
+          <summary>Identity check: {verification.status}</summary>
+          <p>Checked {CONGRESS_OPPONENT_VERIFICATION.checked} · US Chess {verification.uscf}</p>
+          <p>{verification.finding}</p>
+          <p>{verification.limit}</p>
+          <ul>{verification.sources.map(source => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.title} ↗</a></li>)}</ul>
+        </details>}
         <label className={`${styles.selector} ${styles.mobileSelect}`}>Chapter<select className="field" value={visible.some(c => c.id === id) ? id : ''} onChange={e => select(CONGRESS.chapters.find(c => c.id === e.target.value)!)}>{visible.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}</select></label>
         <div className={styles.chapterList} aria-label="Study chapters">{visible.map((c, index) => <button key={c.id} aria-current={c.id === id ? 'true' : undefined} onClick={() => select(c)}>
           <span>{String(index + 1).padStart(2, '0')} · {c.section === 'yunker' ? `YUNKER · ${c.side?.toUpperCase()}` : c.section === 'history' ? 'YOUR EARLIER GAME' : 'OPPONENT EVIDENCE'}</span>

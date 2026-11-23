@@ -1,5 +1,6 @@
 import { Chess } from 'chess.js';
 import data from './data/congress.json';
+import verification from './data/congress-opponent-verification.json';
 
 export interface StudyChapter {
   id: string; title: string; section: string; groups: string[]; note: string;
@@ -10,6 +11,7 @@ export interface StudyChapter {
   opponentEvidence: { title: string; url: string; identity: string; scope: string }[];
 }
 export const CONGRESS = data as Omit<typeof data, 'chapters'> & { chapters: StudyChapter[] };
+export const CONGRESS_OPPONENT_VERIFICATION = verification;
 export const STUDY_PATH = '/studies/philidalphia-national-congress';
 export function compileChapter(chapter: StudyChapter) {
   const game = new Chess();
