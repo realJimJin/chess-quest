@@ -9,6 +9,8 @@ import MoveEntry from "./training/MoveEntry";
 import { parseNotation } from "./training/notation";
 import styles from "./training/training.module.css";
 import { useApp } from "@/lib/store";
+import { YUSUPOV_PATH, yusupovBook } from "@/lib/studies/yusupov";
+import { IS_IOS } from "@/lib/target";
 import { bookTitle } from "@/lib/books";
 import { createPuzzle, formatSolution, mainline, tryMove, type MoveInput, type Puzzle } from "@/lib/puzzle";
 import { formatScore, judgeAlternative } from "@/lib/engine";
@@ -213,6 +215,7 @@ export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdv
   const orientation = (solver === "white") !== flip ? "white" : "black";
   const interactive = !result && !busy && phase === "play";
   const eng = ex.verification.engine;
+  const sourceBook = yusupovBook(ex.bookId);
   const collectionTitle = ex.bookId === "samples" ? "The Starter Collection" : library[ex.bookId]?.book.title ?? bookTitle(ex.bookId);
 
   return (
@@ -255,6 +258,7 @@ export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdv
               {(ex.printedPage ?? ex.pdfPage) > 0 && <span>Page {ex.printedPage ?? ex.pdfPage}</span>}
             </div>
             <div className={styles.exerciseSource}><strong>{collectionTitle}</strong>{ex.chapter.title}{ex.goal ? ` · ${ex.goal}` : ""}</div>
+            {sourceBook && !IS_IOS && <p className={styles.originalNote}>Selected sample position · <Link href={YUSUPOV_PATH}>Replay and sources →</Link></p>}
             {ex.synthetic && <p className={styles.originalNote}><QuestIcon name="shield" /> Original sample puzzle · not from a book</p>}
           </div>
 
@@ -279,7 +283,7 @@ export default function Runner({ ex, mode, position, onNext, onRecorded, autoAdv
                   <p>{result === "solved" ? "Solved without hints" : result === "assisted" ? "Solved with hints" : recorded?.finished === false ? "Solution revealed · queued for review" : "Completed after a miss · queued for review"} · {fmt(recorded?.timeMs ?? elapsed)}</p></div>
                 <span className={styles.xp} data-testid="xp">+{xp} XP</span>
               </div>
-              <div className={styles.solution}><div className="label">{ex.synthetic ? "Original solution" : "Book solution"}</div>
+              <div className={styles.solution}><div className="label">{ex.synthetic ? "Original solution" : sourceBook ? "Sample line · Chess Quest notes" : "Book solution"}</div>
                 <p className="mt-1 font-mono text-sm leading-relaxed" data-testid="solution">{formatSolution(ex.fen, ex.solution)}</p>
                 {ex.explanation && <p className="mt-2 text-sm text-mute">{ex.explanation}</p>}</div>
               {eng?.verdict === "suspicious" && (

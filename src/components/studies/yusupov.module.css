@@ -1,0 +1,41 @@
+.page { max-width: 1160px; margin: 0 auto; }
+.back { color: var(--color-mute); font-size: .85rem; }
+.header { margin: 32px 0 24px; }
+.header h1 { font-family: var(--font-serif), Georgia, serif; font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.15; margin: 10px 0 16px; }
+.header > p:last-child { color: var(--color-mute); }
+.coverage { border-left: 3px solid #b9834e; padding: 15px 20px; background: rgba(185,131,78,.07); font-size: .9rem; line-height: 1.7; }
+.coverage p { margin-top: 4px; max-width: 90ch; color: var(--color-mute); }
+.books { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 28px 0 40px; }
+.books button { text-align: left; border: 1px solid var(--color-line); border-radius: 5px; padding: 20px; display: flex; flex-direction: column; gap: 8px; transition: background .15s; }
+.books button[aria-pressed=true] { border-color: #b9834e; background: rgba(185,131,78,.09); }
+.books strong { font-family: var(--font-serif), Georgia, serif; font-size: 1.3rem; font-weight: 500; }
+.books small, .books button > span:not(.volume) { color: var(--color-mute); font-size: .8rem; }
+.volume { font-size: .75rem; color: #b9834e; letter-spacing: .12em; margin-bottom: 12px; }
+.bookHeading { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.bookHeading h2, .lesson h2 { font-family: var(--font-serif), Georgia, serif; font-size: 1.9rem; margin: 10px 0 16px; }
+.links { display: flex; flex-wrap: wrap; gap: 16px; font-size: .85rem; }
+.links a, .source a, .footer a { text-decoration: underline; text-underline-offset: 4px; }
+.positions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 24px; }
+.positions button { border: 1px solid var(--color-line); padding: 10px 14px; border-radius: 4px; font-size: .85rem; }
+.positions button[aria-pressed=true] { background: var(--color-panel2); border-color: #b9834e; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 36px; align-items: start; }
+.boardColumn { min-width: 0; }
+.boardHeading { display: flex; justify-content: space-between; font-size: .8rem; margin-bottom: 12px; }
+.boardHeading button { text-decoration: underline; text-underline-offset: 3px; }
+.controls { display: flex; gap: 7px; justify-content: center; margin-top: 16px; }
+.controls button { min-height: 44px; padding: .65rem .8rem; white-space: nowrap; }
+.caption { font-size: .78rem; line-height: 1.6; color: var(--color-mute); margin-top: 12px; }
+.boardColumn .caption { text-align: center; }
+.lesson { padding-top: 26px; }
+.lesson > p:not(.eyebrow) { line-height: 1.7; }
+.source { font-size: .78rem; color: var(--color-mute); margin: 18px 0; }
+.linePicker { display: flex; flex-direction: column; gap: 6px; font-size: .8rem; }
+.linePicker select { width: 100%; background: var(--color-panel); border: 1px solid var(--color-line); border-radius: 4px; padding: 10px; }
+.moves { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0 24px; }
+.moves button { font-family: monospace; padding: 8px 10px; border: 1px solid var(--color-line); border-radius: 3px; font-size: .85rem; }
+.moves button[aria-current=step] { background: var(--color-panel2); border-color: #b9834e; }
+.practice { display: flex; gap: 8px; flex-wrap: wrap; }
+.footer { margin-top: 36px; padding: 24px 0; border-top: 1px solid var(--color-line); font-size: .85rem; color: var(--color-mute); line-height: 1.8; }
+.footer p + p { margin-top: 12px; }
+@media (max-width: 760px) { .workspace { grid-template-columns: 1fr; gap: 14px; } .books { gap: 8px; } .books button { padding: 12px; } .books strong { font-size: 1rem; } .bookHeading { align-items: start; flex-direction: column; } .bookHeading h2 { margin-bottom: 0; } .lesson { padding-top: 12px; } }
+@media (max-width: 450px) { .books { grid-template-columns: 1fr; margin-bottom: 24px; } .books button { display: grid; grid-template-columns: 24px 1fr; column-gap: 12px; } .volume { grid-row: 1 / 4; margin: 2px 0; } .books strong { font-size: 1.15rem; }  }
