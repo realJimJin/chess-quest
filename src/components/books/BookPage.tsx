@@ -1,11 +1,12 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
+import type { RenderTask } from 'pdfjs-dist';
 import type { BookDiagram } from '@/lib/private-books';
 import styles from './books.module.css';
+import { useBookDocument } from './BookDocument';
 
-export default function BookPage({ pdf, page, diagrams, selected, onSelect }: { pdf: Blob; page: number; diagrams: BookDiagram[]; selected?: string; onSelect: (diagram: BookDiagram) => void }) {
-  const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
+export default function BookPage({ page, diagrams, selected, onSelect }: { page: number; diagrams: BookDiagram[]; selected?: string; onSelect: (diagram: BookDiagram) => void }) {
+  const { document, error: documentError } = useBookDocument();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [width, setWidth] = useState(600);
@@ -13,22 +14,6 @@ export default function BookPage({ pdf, page, diagrams, selected, onSelect }: { 
   const [zoom, setZoom] = useState(1);
   const canvas = useRef<HTMLCanvasElement>(null);
   const container = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    let alive = true;
-    let task: { destroy: () => Promise<void> } | undefined;
-    void (async () => {
-      try {
-        const pdfjs = await import('pdfjs-dist');
-        pdfjs.GlobalWorkerOptions.workerSrc = '/pdf/pdf.worker.min.mjs';
-        const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await pdf.arrayBuffer()), wasmUrl: '/pdf/wasm/', standardFontDataUrl: '/pdf/standard_fonts/', cMapUrl: '/pdf/cmaps/', cMapPacked: true });
-        task = loadingTask;
-        if (!alive) { await task.destroy(); return; }
-        const loaded = await loadingTask.promise;
-        if (alive) setDocument(loaded);
-      } catch (cause) { if (alive) { setError(cause instanceof Error ? cause.message : 'This PDF could not be opened.'); setLoading(false); } }
-    })();
-    return () => { alive = false; void task?.destroy(); };
-  }, [pdf]);
   useEffect(() => {
     if (!container.current) return;
     const observer = new ResizeObserver(entries => setWidth(Math.max(200, Math.floor(entries[0].contentRect.width))));
@@ -57,7 +42,7 @@ export default function BookPage({ pdf, page, diagrams, selected, onSelect }: { 
     return () => { alive = false; task?.cancel(); };
   }, [document, page, width, zoom]);
   return <div ref={container} className={styles.pdfColumn}>
-    {error && <p role="alert" className="notice-error">{error}</p>}
+    {(error || documentError) && <p role="alert" className="notice-error">{error || documentError}</p>}
     <div className={styles.zoomControls}><span>Source book</span><button aria-label="Zoom out book page" disabled={zoom === 1} onClick={() => setZoom(value => Math.max(1, value - .5))}>−</button><span>{zoom * 100}%</span><button aria-label="Zoom in book page" disabled={zoom === 3} onClick={() => setZoom(value => Math.min(3, value + .5))}>+</button></div>
     <div className={styles.pdfScroll}><div className={styles.pdfPage} style={{ aspectRatio: `1 / ${ratio}`, width: `${zoom * 100}%` }} data-testid="full-book-page" data-page={page} data-rendered={!loading && !error}>
       <canvas ref={canvas} aria-label={`Full book PDF page ${page}`} />

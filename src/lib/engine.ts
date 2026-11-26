@@ -35,20 +35,30 @@ function getWorker(): Worker {
 function run(fen: string, depth: number, searchMove?: string, timeoutMs = 15000): Promise<EvalResult> {
   return new Promise((resolve, reject) => {
     const w = getWorker();
-    let score: Score = { cp: 0 };
-    const timer = setTimeout(() => { w.removeEventListener("message", onMsg); w.postMessage("stop"); reject(new Error("engine timeout")); }, timeoutMs);
+    let score: Score | undefined;
+    const cleanup = () => { clearTimeout(timer); w.removeEventListener("message", onMsg); w.removeEventListener("error", onError); };
+    const fail = (message: string) => {
+      cleanup();
+      // A timed-out worker may still emit bestmove. Discard it so that reply
+      // cannot resolve the next position's request in the queue.
+      w.terminate(); if (worker === w) worker = null;
+      reject(new Error(message));
+    };
+    const timer = setTimeout(() => fail("engine timeout"), timeoutMs);
+    const onError = () => fail("engine failed to load");
     const onMsg = (e: MessageEvent) => {
       const line = String(e.data);
       if (line.startsWith("info") && line.includes(" score ")) {
         const m = line.match(/score (cp|mate) (-?\d+)/);
         if (m && !/ (upper|lower)bound/.test(line)) score = m[1] === "cp" ? { cp: +m[2] } : { mate: +m[2] };
       } else if (line.startsWith("bestmove")) {
-        clearTimeout(timer); w.removeEventListener("message", onMsg);
-        resolve({ score, best: line.split(" ")[1] });
+        const best = line.split(" ")[1];
+        if (!score || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(best)) { fail("engine returned no usable evaluation"); return; }
+        cleanup(); resolve({ score, best });
       }
     };
     w.addEventListener("message", onMsg);
-    w.addEventListener("error", () => { clearTimeout(timer); reject(new Error("engine failed to load")); }, { once: true });
+    w.addEventListener("error", onError);
     w.postMessage(`position fen ${fen}`);
     w.postMessage(`go depth ${depth}${searchMove ? ` searchmoves ${searchMove}` : ""}`);
   });

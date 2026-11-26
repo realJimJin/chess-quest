@@ -64,3 +64,43 @@ describe('private complete books', () => {
     expect(await listFullBooks()).toEqual([]);
   });
 });
+
+it('validates answer bounds and rejects illegal book continuations', async () => {
+  const book = await fixture();
+  book.diagrams[0].training = { chapterId: 'first', answer: [{ page: 4, x: .1, y: .1, width: .4, height: .4 }] };
+  expect(() => validateFullBook(book)).toThrow('answer region');
+  book.diagrams[0].training.answer[0].page = 3;
+  book.diagrams[0].training.solution = [{ uci: 'b1b8', san: 'Rb8+', children: [{ uci: 'h8h1', san: 'Kh1', children: [] }] }];
+  expect(() => validateFullBook(book)).toThrow('book move line');
+});
+it('upgrades an existing book with only its encrypted index and preserves progress and PDF', async () => {
+  const { correctBookDiagram, recordBookPractice, updateFullBookIndex } = await import('./private-books');
+  const book = await fixture(); await importBookPackage(pack(book));
+  await saveBookPage(book.id, 2); await markBookDiagram(book.id, 'first-diagram', true);
+  await correctBookDiagram(book.id, 'first-diagram', book.diagrams[0].fen!);
+  await recordBookPractice(book.id, 'first-diagram', 'revealed');
+  const previous = await readBookProgress(book.id);
+  const updated = { ...book, revision: 2 };
+  updated.diagrams[0].training = { chapterId: 'first', answer: [{ page: 3, x: .1, y: .1, width: .4, height: .4 }] };
+  const id = 'dd2e8d36-6764-4966-978e-b91c3694a6fb';
+  const rawKey = crypto.getRandomValues(new Uint8Array(32)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await crypto.subtle.importKey('raw', rawKey, 'AES-GCM', false, ['encrypt']);
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: strToU8(`${id}/${book.id}/index`) }, key, strToU8(JSON.stringify(updated)));
+  const fetcher = vi.fn(async (url: string) => url.endsWith('delivery.json') ? new Response(JSON.stringify({ version: 2, books: [{ id: book.id, revision: 2, index: { file: 'index.bin', iv: b64(iv) }, parts: [{ file: 'large-book.bin', iv: b64(iv) }] }] })) : new Response(encrypted));
+  vi.stubGlobal('fetch', fetcher);
+  await importPrivateDelivery(id, b64(rawKey), () => {});
+  expect(fetcher.mock.calls.map(([url]) => url)).toHaveLength(2);
+  expect(fetcher.mock.calls.some(([url]) => url.endsWith('large-book.bin'))).toBe(false);
+  expect((await loadFullBook(book.id)).book.revision).toBe(2);
+  expect(await (await loadFullBook(book.id)).pdf.text()).toBe(new TextDecoder().decode(pdf));
+  expect(await readBookProgress(book.id)).toEqual(previous);
+  await expect(updateFullBookIndex({ ...updated, revision: 3, sha256: '0'.repeat(64) }, book.id)).rejects.toThrow('does not match');
+});
+it('keeps revealed, engine-checked and book-solved results distinct', async () => {
+  const { recordBookPractice } = await import('./private-books');
+  await recordBookPractice('fixture', 'one', 'revealed');
+  await recordBookPractice('fixture', 'one', 'engine-checked');
+  expect((await readBookProgress('fixture')).practice?.one).toMatchObject({ revealed: true, engineChecked: true, bookSolved: false });
+  await Promise.all([recordBookPractice('fixture', 'one', 'attempt'), recordBookPractice('fixture', 'one', 'attempt')]);
+  expect((await readBookProgress('fixture')).practice?.one.attempts).toBe(2);
+});

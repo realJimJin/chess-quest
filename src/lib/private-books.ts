@@ -1,22 +1,28 @@
 import { createStore, get, getMany, keys, setMany, update } from 'idb-keyval';
-import { validateFen } from 'chess.js';
+import { Chess, validateFen } from 'chess.js';
+import type { SolNode } from './types';
 import { unzip } from 'fflate';
 
 export interface BookChapter { id: string; title: string; page: number; endPage: number }
+export interface BookRegion { page: number; x: number; y: number; width: number; height: number }
+export interface BookTraining { chapterId: string; answer: BookRegion[]; solution?: SolNode[] }
 export interface BookDiagram {
   id: string; page: number; label: string; fen: string | null;
   x: number; y: number; width: number; height: number;
   confidence: number; needsReview: boolean; side: 'w' | 'b' | 'unknown';
+  training?: BookTraining;
 }
 export interface FullBook {
   schema: 'chessquest/full-book@1'; id: string; title: string; author: string;
-  pageCount: number; sha256: string; chapters: BookChapter[]; diagrams: BookDiagram[];
+  pageCount: number; sha256: string; revision?: number; chapters: BookChapter[]; diagrams: BookDiagram[];
 }
 export interface FullBookSummary {
   id: string; title: string; author: string; pageCount: number; diagramCount: number;
-  chapterCount: number; sha256: string; addedAt: number;
+  chapterCount: number; sha256: string; revision?: number; exerciseCount?: number; addedAt: number;
 }
-export interface ReadingProgress { page: number; completed: string[]; positions?: Record<string, string> }
+export interface BookPractice { attempts: number; bookSolved: boolean; engineChecked: boolean; revealed: boolean; updatedAt: number }
+export type BookPracticeEvent = 'attempt' | 'solved' | 'engine-checked' | 'revealed';
+export interface ReadingProgress { page: number; completed: string[]; positions?: Record<string, string>; practice?: Record<string, BookPractice>; exercise?: string }
 const database = () => createStore('chessquest-private-books', 'books');
 export const PRIVATE_BOOKS_EVENT = 'chessquest:private-books';
 
@@ -28,6 +34,7 @@ export function validateFullBook(raw: unknown): FullBook {
       !Number.isInteger(book.pageCount) || book.pageCount < 1 || book.pageCount > 2000 ||
       !Array.isArray(book.chapters) || book.chapters.length > 150 ||
       !Array.isArray(book.diagrams) || book.diagrams.length > 4000) throw new Error('This is not a supported full-book package.');
+  if (book.revision !== undefined && (!Number.isInteger(book.revision) || book.revision < 1)) throw new Error('Invalid book revision.');
   const ids = new Set<string>();
   for (const chapter of book.chapters) {
     if (typeof chapter.id !== 'string' || typeof chapter.title !== 'string' ||
@@ -42,6 +49,34 @@ export function validateFullBook(raw: unknown): FullBook {
         [diagram.x, diagram.y, diagram.width, diagram.height].some(x => !Number.isFinite(x) || x < 0 || x > 1) ||
         diagram.width <= 0 || diagram.height <= 0 || diagram.x + diagram.width > 1.01 || diagram.y + diagram.height > 1.01 ||
         (diagram.fen !== null && (typeof diagram.fen !== 'string' || !validateFen(diagram.fen).ok))) throw new Error('A diagram in the package is invalid.');
+    if (diagram.training) {
+      const training = diagram.training;
+      if (!book.chapters.some(c => c.id === training.chapterId) || !Array.isArray(training.answer) || !training.answer.length || training.answer.length > 16) throw new Error('The book answer index is invalid.');
+      for (const part of training.answer) {
+        if (!Number.isInteger(part.page) || part.page < 1 || part.page > book.pageCount ||
+            [part.x, part.y, part.width, part.height].some(v => !Number.isFinite(v) || v < 0 || v > 1) ||
+            part.width <= 0 || part.height <= 0 || part.x + part.width > 1.001 || part.y + part.height > 1.001) throw new Error('The book answer region is invalid.');
+      }
+      if (training.solution !== undefined) {
+        if (!diagram.fen || !Array.isArray(training.solution) || !training.solution.length) throw new Error('The book move line is invalid.');
+        let count = 0;
+        const walk = (nodes: SolNode[], fen: string, depth: number) => {
+          if (!Array.isArray(nodes) || depth > 150) throw new Error('The book move line is invalid.');
+          const seen = new Set<string>();
+          for (const node of nodes) {
+            if (++count > 2000 || !node || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(node.uci) || typeof node.san !== 'string' || seen.has(node.uci)) throw new Error('The book move line is invalid.');
+            seen.add(node.uci);
+            const position = new Chess(fen);
+            try {
+              const move = position.move({ from: node.uci.slice(0, 2), to: node.uci.slice(2, 4), promotion: node.uci[4] });
+              if (move.san !== node.san) throw new Error('Mismatched notation');
+            } catch { throw new Error('The book move line is invalid.'); }
+            walk(node.children, position.fen(), depth + 1);
+          }
+        };
+        walk(training.solution, diagram.fen, 0);
+      }
+    }
     ids.add(diagram.id);
   }
   return book;
@@ -62,7 +97,7 @@ export async function saveFullBook(book: FullBook, pdf: Uint8Array) {
   if (pdf.length > 160 * 1024 * 1024 || new TextDecoder().decode(pdf.slice(0, 5)) !== '%PDF-') throw new Error('The source PDF is missing or too large.');
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new Uint8Array(pdf)))).map(v => v.toString(16).padStart(2, '0')).join('');
   if (digest !== book.sha256) throw new Error('The source PDF does not match this book’s index. Nothing was imported.');
-  const meta: FullBookSummary = { id: book.id, title: book.title, author: book.author, pageCount: book.pageCount, diagramCount: book.diagrams.length, chapterCount: book.chapters.length, sha256: book.sha256, addedAt: Date.now() };
+  const meta: FullBookSummary = { id: book.id, title: book.title, author: book.author, pageCount: book.pageCount, diagramCount: book.diagrams.length, chapterCount: book.chapters.length, sha256: book.sha256, revision: book.revision, exerciseCount: book.diagrams.filter(d => d.training).length, addedAt: Date.now() };
   // One transaction: a full book never appears without its PDF. Reimport does
   // not touch reading progress, corrections, or the existing exercise library.
   await setMany([[`meta:${book.id}`, meta], [`book:${book.id}`, book], [`pdf:${book.id}`, new Blob([new Uint8Array(pdf)], { type: 'application/pdf' })]], database());
@@ -75,6 +110,24 @@ export const correctBookDiagram = (id: string, diagram: string, fen: string) => 
   if (!validateFen(fen).ok) throw new Error('Enter a valid FEN position.');
   return update<ReadingProgress>(`progress:${id}`, value => ({ ...value, page: value?.page ?? 1, completed: value?.completed ?? [], positions: { ...value?.positions, [diagram]: fen } }), database());
 };
+
+export const saveBookExercise = (id: string, exercise: string) => update<ReadingProgress>(`progress:${id}`, value => ({ ...value, page: value?.page ?? 1, completed: value?.completed ?? [], exercise }), database());
+export const recordBookPractice = (id: string, diagram: string, event: BookPracticeEvent) => update<ReadingProgress>(`progress:${id}`, value => {
+  const previous = value?.practice?.[diagram] ?? { attempts: 0, bookSolved: false, engineChecked: false, revealed: false, updatedAt: 0 };
+  const practice: BookPractice = { ...previous, attempts: previous.attempts + (event === 'attempt' ? 1 : 0), bookSolved: previous.bookSolved || event === 'solved', engineChecked: previous.engineChecked || event === 'engine-checked', revealed: previous.revealed || event === 'revealed', updatedAt: Date.now() };
+  return { ...value, page: value?.page ?? 1, completed: value?.completed ?? [], practice: { ...value?.practice, [diagram]: practice } };
+}, database());
+
+/** Index-only upgrades never replace the PDF or a user's saved work. */
+export async function updateFullBookIndex(raw: unknown, expectedId: string) {
+  const book = validateFullBook(raw);
+  const store = database();
+  const meta = await get<FullBookSummary>(`meta:${expectedId}`, store);
+  if (book.id !== expectedId || !meta || meta.sha256 !== book.sha256 || meta.pageCount !== book.pageCount) throw new Error('This update does not match the saved source book.');
+  if ((book.revision ?? 1) <= (meta.revision ?? 1)) return;
+  await setMany([[`book:${book.id}`, book], [`meta:${book.id}`, { ...meta, revision: book.revision, diagramCount: book.diagrams.length, exerciseCount: book.diagrams.filter(d => d.training).length }]], store);
+  window.dispatchEvent(new Event(PRIVATE_BOOKS_EVENT));
+}
 
 export async function importBookPackage(data: Uint8Array, expectedId?: string) {
   if (data.byteLength > 170 * 1024 * 1024) throw new Error('This package is too large.');
@@ -95,12 +148,25 @@ export async function importPrivateDelivery(id: string, keyText: string, onProgr
   const base = `/private-import/${id}`;
   const response = await fetch(`${base}/delivery.json`, { credentials: 'omit' });
   if (!response.ok) throw new Error('This delivery link is no longer available. You can still import your saved book packages below.');
-  const delivery = await response.json() as { version: number; books: { id: string; parts: { file: string; iv: string }[] }[] };
-  if (delivery.version !== 1 || !Array.isArray(delivery.books) || !delivery.books.length || delivery.books.length > 9) throw new Error('Invalid book delivery.');
+  const delivery = await response.json() as { version: number; books: { id: string; revision?: number; index?: { file: string; iv: string }; parts: { file: string; iv: string }[] }[] };
+  if (![1, 2].includes(delivery.version) || !Array.isArray(delivery.books) || !delivery.books.length || delivery.books.length > 9) throw new Error('Invalid book delivery.');
   const saved = await listFullBooks();
   for (const [index, entry] of delivery.books.entries()) {
     if (!/^[a-z0-9-]{1,80}$/.test(entry.id) || !Array.isArray(entry.parts) || !entry.parts.length || entry.parts.length > 24) throw new Error('Invalid book delivery.');
-    if (saved.some(book => book.id === entry.id)) continue;
+    const existing = saved.find(book => book.id === entry.id);
+    if (existing) {
+      if (delivery.version === 1 || (existing.revision ?? 1) >= (entry.revision ?? 1)) continue;
+      const part = entry.index;
+      if (!part || !/^[a-z0-9-]+\.bin$/.test(part.file) || !/^[A-Za-z0-9_-]{16}$/.test(part.iv)) throw new Error('Invalid book update.');
+      onProgress(`Updating exercises and solutions · book ${index + 1} of ${delivery.books.length}…`);
+      const result = await fetch(`${base}/${part.file}`, { credentials: 'omit' });
+      if (!result.ok) throw new Error('The update was interrupted. Reopen your private link to continue.');
+      const encrypted = await result.arrayBuffer();
+      if (encrypted.byteLength > 5 * 1024 * 1024) throw new Error('Invalid update size.');
+      const bytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: decodeKey(part.iv), additionalData: new TextEncoder().encode(`${id}/${entry.id}/index`) }, key, encrypted);
+      await updateFullBookIndex(JSON.parse(new TextDecoder().decode(bytes)), entry.id);
+      continue;
+    }
     const chunks: Uint8Array[] = [];
     let size = 0;
     for (const [partIndex, part] of entry.parts.entries()) {
