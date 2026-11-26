@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useApp } from "@/lib/store";
 import { exerciseErrors, validateDb, type ImportResult } from "@/lib/validate";
 import { formatSolution, parseSolutionText } from "@/lib/puzzle";
@@ -66,7 +67,7 @@ export default function ImportPage() {
   const { library, exercises, importBook, updateExercise, removeBook } = useApp();
   const [res, setRes] = useState<ImportResult | null>(null);
   const [msg, setMsg] = useState("");
-  const [local, setLocal] = useState<boolean | null>(null);
+  const [local, setLocal] = useState<boolean | null>(process.env.NEXT_PUBLIC_TARGET === "ios" ? false : null);
   const [busy, setBusy] = useState(false);
   const [pdf, setPdf] = useState<File | null>(null);
   const [opts, setOpts] = useState({ profile: "cs2a", pages: "", solutionsPages: "", pageOffset: "0", firstNumber: "1", lang: "fig", synthetic: false });
@@ -74,7 +75,7 @@ export default function ImportPage() {
   const [open, setOpen] = useState<string | null>(null);
 
   const ios = process.env.NEXT_PUBLIC_TARGET === "ios";
-  useEffect(() => { if (process.env.NEXT_PUBLIC_TARGET === "ios") { setLocal(false); return; } fetch("/api/extract").then((r) => r.json()).then((j) => setLocal(Boolean(j.available))).catch(() => setLocal(false)); }, []);
+  useEffect(() => { if (process.env.NEXT_PUBLIC_TARGET === "ios") return; fetch("/api/extract").then((r) => r.json()).then((j) => setLocal(Boolean(j.available))).catch(() => setLocal(false)); }, []);
 
   const take = (raw: unknown) => {
     const r = validateDb(raw);
@@ -116,8 +117,9 @@ export default function ImportPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Import your book</h1>
         {process.env.NEXT_PUBLIC_TARGET === "ios" ? <p className="mt-1 max-w-3xl text-sm text-mute">Chess Quest trains from exercise files you supply. They are stored on this device only and never uploaded.</p>
-          : <p className="mt-1 max-w-3xl text-sm text-mute">The two public publisher PDFs for Chess School 2a and 2b are 7-page previews (cover, contents, foreword, symbol key) with no exercises, and no complete edition is openly available. Exercises therefore come only from a PDF you own. They are stored in this browser and never uploaded to the hosted site.</p>}
+          : <p className="mt-1 max-w-3xl text-sm text-mute">Add exercise files from books you own, or open a complete book with its pages and a practice board. Your private book files stay in this browser.</p>}
       </div>
+      {process.env.NEXT_PUBLIC_TARGET !== "ios" && <section className="card p-5"><h2 className="font-semibold">Complete books</h2><p className="my-3 text-sm text-mute">Keep the full lessons, exercises, and answers alongside an interactive board.</p><Link href="/books" className="btn">Open my full-book library →</Link></section>}
       {msg && <p className="rounded-xl border border-line bg-panel2 px-4 py-3 text-sm" data-testid="import-msg">{msg}</p>}
 
       <section className="grid gap-4 lg:grid-cols-2">

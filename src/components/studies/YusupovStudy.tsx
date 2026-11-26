@@ -90,6 +90,7 @@ export default function YusupovStudy() {
   const position = book.positions[positionIndex];
   return <div className={styles.page}>
     <Link href="/" className={styles.back}>← Library</Link>
+    <p className="my-5"><Link className="btn" href="/books">Open your complete private books →</Link></p>
     <header className={styles.header}><p className="eyebrow">THE ORANGE BOOKS · ARTUR YUSUPOV</p><h1>The fundamentals.</h1><p>Build. Boost. Evolve. Study an idea on the board, then calculate it yourself.</p></header>
     <div className={styles.coverage}><strong>Selected sample positions — not the full books.</strong><p>Nine positions from three publisher excerpts, with Chess Quest explanations. Only the chapters listed below are represented. Full digital editions open separately on ChessTempo; a purchase there does not import the book into Chess Quest.</p></div>
     <nav className={styles.books} aria-label="Yusupov books">{YUSUPOV_BOOKS.map((item, index) => <button key={item.id} onClick={() => { setBookIndex(index); setPositionIndex(0); }} aria-pressed={bookIndex === index}><span className={styles.volume}>0{index + 1}</span><strong>{item.title}</strong><span>The Fundamentals</span><small>{item.chapter}<br />3 selected positions</small></button>)}</nav>

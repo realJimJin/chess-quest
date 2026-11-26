@@ -76,3 +76,7 @@ xcuserdata/
 *.epub
 *.djvu
 private/
+
+# Full user books and encrypted one-time deliveries never go in the public repo.
+/public/private-import/
+/public/pdf/

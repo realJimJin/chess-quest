@@ -13,6 +13,7 @@ import CourseCover from "./CourseCover";
 import { IS_IOS } from "@/lib/target";
 import QuestIcon from "./QuestIcon";
 import { YUSUPOV_PATH, yusupovBook } from "@/lib/studies/yusupov";
+import FullBooksShelf from "./books/FullBooksShelf";
 
 const STARTER: LibraryBook = { book: SAMPLE_PACK.book, exercises: SAMPLE_PACK.exercises, importedAt: 0 };
 const titleOf = (b: LibraryBook) => b.book.id === "samples" ? "The Starter Collection" : b.book.title;
@@ -50,6 +51,7 @@ export default function LibraryExperience() {
   };
   return <div className="library-experience">
     <div className="page-heading"><div><p className="eyebrow">YOUR NEXT GOOD MOVE STARTS HERE</p><h1>The library<span>.</span></h1><p>Read with intention. Practice on the board.</p></div><Link className="btn" href="/import"><QuestIcon name="plus" />Import a book <small>PRIVATE</small></Link></div>
+    {!IS_IOS && <FullBooksShelf />}
     {!IS_IOS && <section className="card mb-6 p-6" aria-label="Tournament study"><p className="eyebrow">YOUR TOURNAMENT PREPARATION</p><h2 className="my-3 text-2xl">Philidalphia national congress</h2><p className="mb-4 text-sm">55 chapters. Yunker’s recorded openings, opponent games, and your earlier games. Replay each position and practice on the board.</p><Link className="btn btn-primary" href="/studies/philidalphia-national-congress">Open tournament study →</Link></section>}
     {!IS_IOS && <section className="card mb-6 p-6" aria-label="Yusupov book samples"><p className="eyebrow">THE ORANGE BOOKS · SELECTED SAMPLE POSITIONS</p><h2 className="my-3 text-2xl">Build. Boost. Evolve.</h2><p className="mb-4 text-sm">Nine interactive positions from the publisher’s excerpts of Build Up Your Chess 1, Boost Your Chess 1, and Chess Evolution 1. Replay the ideas, then practice. Full books are not included.</p><Link className="btn btn-primary" href={YUSUPOV_PATH}>Open Yusupov study →</Link></section>}
     {error && <p role="alert" className="notice-error">{error}</p>}
