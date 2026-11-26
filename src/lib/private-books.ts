@@ -14,7 +14,7 @@ export interface BookDiagram {
 }
 export interface FullBook {
   schema: 'chessquest/full-book@1'; id: string; title: string; author: string;
-  pageCount: number; sha256: string; revision?: number; chapters: BookChapter[]; diagrams: BookDiagram[];
+  pageCount: number; sha256: string; revision?: number; sourceNote?: string; chapters: BookChapter[]; diagrams: BookDiagram[];
 }
 export interface FullBookSummary {
   id: string; title: string; author: string; pageCount: number; diagramCount: number;
@@ -26,6 +26,12 @@ export interface ReadingProgress { page: number; completed: string[]; positions?
 const database = () => createStore('chessquest-private-books', 'books');
 export const PRIVATE_BOOKS_EVENT = 'chessquest:private-books';
 
+/** Printed exercise pages are read down the left column, then the right. */
+export function listBookExercises(book: FullBook): BookDiagram[] {
+  return book.diagrams.filter(diagram => diagram.training).sort((a, b) =>
+    a.page - b.page || Number(a.x >= .48) - Number(b.x >= .48) || a.y - b.y);
+}
+
 export function validateFullBook(raw: unknown): FullBook {
   const book = raw as FullBook;
   if (!book || book.schema !== 'chessquest/full-book@1' || !/^[a-z0-9-]{1,80}$/.test(book.id) ||
@@ -35,6 +41,7 @@ export function validateFullBook(raw: unknown): FullBook {
       !Array.isArray(book.chapters) || book.chapters.length > 150 ||
       !Array.isArray(book.diagrams) || book.diagrams.length > 4000) throw new Error('This is not a supported full-book package.');
   if (book.revision !== undefined && (!Number.isInteger(book.revision) || book.revision < 1)) throw new Error('Invalid book revision.');
+  if (book.sourceNote !== undefined && (typeof book.sourceNote !== 'string' || book.sourceNote.length > 1000)) throw new Error('Invalid source note.');
   const ids = new Set<string>();
   for (const chapter of book.chapters) {
     if (typeof chapter.id !== 'string' || typeof chapter.title !== 'string' ||

@@ -12,6 +12,11 @@ export default function FullBookLibrary() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const started = useRef('');
+  const collections = [
+    { title: 'Beyond the Basics · Level 2', description: 'Build Up 2 → Boost 2 → Chess Evolution 2. Work through each chapter’s lesson, then test yourself before revealing the solutions.', color: 'blue', books: books.filter(book => book.title.includes('Beyond the Basics')) },
+    { title: 'Mastery · Level 3', description: 'Continue with Build Up 3, then Boost 3. Your imported green books appear below.', color: 'green', books: books.filter(book => book.title.includes('Mastery')) },
+    { title: 'Your other full books', description: '', color: '', books: books.filter(book => !book.title.includes('Beyond the Basics') && !book.title.includes('Mastery')) },
+  ].filter(collection => collection.books.length);
   const refresh = async () => setBooks(await listFullBooks());
   useEffect(() => {
     const load = () => {
@@ -55,7 +60,10 @@ export default function FullBookLibrary() {
     <header className={styles.libraryHeader}><p className="eyebrow">YOUR PRIVATE BOOKS</p><h1>Read. Calculate. Understand.</h1><p>Learn from the full book, test your moves, and reveal the original solutions.</p></header>
     {message && <p className={styles.message} role="status">{message}</p>}
     {error && <p className="notice-error" role="alert">{error}</p>}
-    <div className={styles.bookGrid}>{books.map((book, index) => <button key={book.id} className={styles.bookCard} disabled={busy} onClick={() => setSelected(book.id)}><span className={styles.bookNumber}>0{index + 1}</span><p className="eyebrow">FULL BOOK</p><h2>{book.title}</h2><p>{book.author}</p><div>{book.pageCount} pages · {book.chapterCount} sections<br />{book.exerciseCount ? `${book.exerciseCount} training exercises` : `${book.diagramCount} imported diagrams`}</div><strong>Train & read →</strong></button>)}</div>
+    {collections.map(collection => <section key={collection.title} className={styles.collection} data-series={collection.color || undefined} aria-label={collection.title}>
+      {(collection.color || collections.length > 1) && <header><h2>{collection.title}</h2>{collection.description && <p>{collection.description}</p>}</header>}
+      <div className={styles.bookGrid}>{collection.books.map((book, index) => <button key={book.id} className={styles.bookCard} disabled={busy} onClick={() => setSelected(book.id)}><span className={styles.bookNumber}>{String(index + 1).padStart(2, '0')}</span><p className="eyebrow">{collection.color ? `${collection.color.toUpperCase()} SERIES · FULL BOOK` : 'FULL BOOK'}</p><h2>{book.title}</h2><p>{book.author}</p><div>{book.pageCount} pages · {book.chapterCount} sections<br />{book.exerciseCount ? `${book.exerciseCount} training exercises` : `${book.diagramCount} imported diagrams`}</div><strong>Train & read →</strong></button>)}</div>
+    </section>)}
     {!books.length && !busy && <p className={styles.message}>Open your private delivery link or choose your prepared book packages below. Full books are kept in this browser, separate from the public samples.</p>}
     <section className={styles.import}><h2>Add complete books</h2><p>Select one or more prepared Chess Quest book packages. Each contains the complete PDF and its interactive diagram index. The files are stored on this device.</p><label className="btn">{busy ? 'Adding books…' : 'Choose book packages'}<input data-testid="full-book-import" type="file" multiple accept=".cquest,.zip" disabled={busy} onChange={e => void importFiles(e.target.files)} /></label><p className={styles.caption}>Keep the original packages as a backup. Books and reading marks do not yet sync between devices; open your private delivery link on each device you use.</p></section>
   </div>;

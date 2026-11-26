@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { correctBookDiagram, loadFullBook, markBookDiagram, readBookProgress, recordBookPractice, saveBookExercise, saveBookPage, type BookDiagram, type FullBook, type ReadingProgress } from '@/lib/private-books';
+import { correctBookDiagram, listBookExercises, loadFullBook, markBookDiagram, readBookProgress, recordBookPractice, saveBookExercise, saveBookPage, type BookDiagram, type FullBook, type ReadingProgress } from '@/lib/private-books';
 import BookPage from './BookPage';
 import BookBoard from './BookBoard';
 import BookDocument from './BookDocument';
@@ -22,7 +22,7 @@ export default function FullBookReader({ id, onClose }: { id: string; onClose: (
       if (!alive) return;
       const first = saved.page > 1 ? Math.min(saved.page, loaded.book.pageCount) : loaded.book.chapters[0]?.page ?? 1;
       setRecord(loaded); setProgress(saved); setPage(first); setPageDraft(String(first));
-      const exercises = loaded.book.diagrams.filter(d => d.training);
+      const exercises = listBookExercises(loaded.book);
       const exercise = exercises.find(d => d.id === saved.exercise) ?? exercises[0];
       setSelected(exercise ?? loaded.book.diagrams.find(diagram => diagram.page >= first) ?? loaded.book.diagrams[0] ?? null);
       if (exercise) { setMode('train'); setPage(exercise.page); setPageDraft(String(exercise.page)); }
@@ -42,7 +42,7 @@ export default function FullBookReader({ id, onClose }: { id: string; onClose: (
   if (!record) return <div><button className="btn" onClick={onClose}>← All full books</button><p role={error ? 'alert' : 'status'}>{error || 'Opening your complete book…'}</p></div>;
   const { book, pdf } = record;
   const pageDiagrams = book.diagrams.filter(diagram => diagram.page === page);
-  const exercises = book.diagrams.filter(d => d.training);
+  const exercises = listBookExercises(book);
   const chapter = book.chapters.find(item => page >= item.page && page <= item.endPage);
   const chapterExercises = exercises.filter(d => d.training?.chapterId === chapter?.id);
   const exerciseIndex = chapterExercises.findIndex(d => d.id === selected?.id);
@@ -51,6 +51,7 @@ export default function FullBookReader({ id, onClose }: { id: string; onClose: (
   return <BookDocument pdf={pdf}><div className={styles.reader}>
     <button className={styles.back} onClick={onClose}>← All full books</button>
     <header className={styles.readerHeader}><div><p className="eyebrow">YOUR COMPLETE BOOK · SAVED ON THIS DEVICE</p><h1>{book.title}</h1><p>{book.author} · {book.pageCount} pages · {book.diagrams.length} imported diagrams · {progress.completed.length} marked studied</p></div></header>
+    {book.sourceNote && <p className={styles.review}>{book.sourceNote}</p>}
     <div className={styles.modeTabs}><button aria-pressed={mode === 'train'} disabled={!exercises.length} onClick={startTraining}>Train exercises{exercises.length ? ` · ${exercises.length}` : ''}</button><button aria-pressed={mode === 'read'} onClick={() => setMode('read')}>Read full book</button></div>
     {!exercises.length && <p className={styles.message}>Open your updated private book link to add move checking and the original exercise answers to this saved book.</p>}
     <div className={styles.readerTools}><label>Chapter<select aria-label="Book chapter" value={chapter?.id ?? ''} onChange={event => { const next = book.chapters.find(c => c.id === event.target.value); if (next) { navigate(next.page); const first = mode === 'train' ? exercises.find(d => d.training?.chapterId === next.id) : book.diagrams.find(d => d.page >= next.page && d.page <= next.endPage); setSelected(first ?? null); if (first && mode === 'train') chooseExercise(first); } }}><option value="">Front matter / index</option>{book.chapters.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>{mode === 'read' && <div className={styles.pageControls}><button className="btn" aria-label="Previous book page" disabled={page === 1} onClick={() => navigate(page - 1)}>←</button><label>PDF page <input type="number" min={1} max={book.pageCount} value={pageDraft} aria-label="PDF page" onChange={e => setPageDraft(e.target.value)} onBlur={() => navigate(Number(pageDraft))} onKeyDown={e => { if (e.key === 'Enter') navigate(Number(pageDraft)); }} /></label><span>/ {book.pageCount}</span><button className="btn" aria-label="Next book page" disabled={page === book.pageCount} onClick={() => navigate(page + 1)}>→</button></div>}</div>

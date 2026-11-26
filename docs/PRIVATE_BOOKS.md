@@ -12,6 +12,12 @@ For positions without a verified move tree, and for alternative moves, Stockfish
 
 Recognition of a scan is not proven by FEN legality. Source diagrams remain accessible beside correction controls, including side to move and castling rights. Changing a starting position disables the stored book tree unless it exactly matches that tree's original FEN. Corrections are device-local.
 
+## Series and source fidelity
+
+Imported Beyond the Basics books appear first in blue, ordered Build Up 2, Boost 2, Chess Evolution 2. Mastery books follow in green. Existing books stay in the same database with their progress preserved. Exercise selectors read down the left column before the right, matching printed exercise numbering.
+
+An optional `sourceNote` records a known omission in a supplied PDF and is shown in the reader. Chapter links use actual PDF pages, so missing printed pages do not shift later chapters. An incomplete source is not silently presented as a complete original edition.
+
 ## Import package
 
 A `.cquest` file is a ZIP containing:

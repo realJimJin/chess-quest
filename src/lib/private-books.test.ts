@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clear, createStore, get, set } from 'idb-keyval';
 import { strToU8, zipSync } from 'fflate';
-import { importBookPackage, importPrivateDelivery, listFullBooks, loadFullBook, markBookDiagram, readBookProgress, saveBookPage, validateFullBook, type FullBook } from './private-books';
+import { importBookPackage, importPrivateDelivery, listBookExercises, listFullBooks, loadFullBook, markBookDiagram, readBookProgress, saveBookPage, validateFullBook, type FullBook } from './private-books';
 
 const pdf = strToU8('%PDF-1.7\nThis is a storage fixture, not a rendered document.');
 const fixture = async (id = 'fixture-book'): Promise<FullBook> => ({
@@ -20,6 +20,23 @@ beforeEach(async () => {
 });
 
 describe('private complete books', () => {
+  it('trains in printed column order without changing the saved diagram index', async () => {
+    const book = await fixture();
+    const diagram = book.diagrams[0];
+    const training = { chapterId: 'first', answer: [{ page: 3, x: .1, y: .1, width: .4, height: .4 }] };
+    book.diagrams = [
+      { ...diagram, id: 'ex-1', x: .1, y: .1, training },
+      { ...diagram, id: 'ex-4', x: .6, y: .1, training },
+      { ...diagram, id: 'ex-2', x: .1, y: .4, training },
+      { ...diagram, id: 'ex-5', x: .6, y: .4, training },
+      { ...diagram, id: 'ex-3', x: .1, y: .7, training },
+      { ...diagram, id: 'ex-6', x: .6, y: .7, training },
+      { ...diagram, id: 'example' },
+      { ...diagram, id: 'ex-7', page: 3, training },
+    ];
+    expect(listBookExercises(book).map(d => d.id)).toEqual(['ex-1', 'ex-2', 'ex-3', 'ex-4', 'ex-5', 'ex-6', 'ex-7']);
+    expect(book.diagrams[1].id).toBe('ex-4');
+  });
   it('imports complete source and index together without touching the old library', async () => {
     await set('cst.library.v1', { keep: true });
     const book = await fixture(); await importBookPackage(pack(book));
