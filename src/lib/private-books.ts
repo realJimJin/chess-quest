@@ -125,15 +125,41 @@ export const recordBookPractice = (id: string, diagram: string, event: BookPract
   return { ...value, page: value?.page ?? 1, completed: value?.completed ?? [], practice: { ...value?.practice, [diagram]: practice } };
 }, database());
 
-/** Index-only upgrades never replace the PDF or a user's saved work. */
+/** Keep the PDF and history; invalidate grades only when the practiced position changes. */
 export async function updateFullBookIndex(raw: unknown, expectedId: string) {
   const book = validateFullBook(raw);
-  const store = database();
-  const meta = await get<FullBookSummary>(`meta:${expectedId}`, store);
-  if (book.id !== expectedId || !meta || meta.sha256 !== book.sha256 || meta.pageCount !== book.pageCount) throw new Error('This update does not match the saved source book.');
-  if ((book.revision ?? 1) <= (meta.revision ?? 1)) return;
-  await setMany([[`book:${book.id}`, book], [`meta:${book.id}`, { ...meta, revision: book.revision, diagramCount: book.diagrams.length, exerciseCount: book.diagrams.filter(d => d.training).length }]], store);
-  window.dispatchEvent(new Event(PRIVATE_BOOKS_EVENT));
+  const changed = await database()('readwrite', store => new Promise<boolean>((resolve, reject) => {
+    let changed = false, failure: unknown;
+    const tx = store.transaction;
+    tx.oncomplete = () => resolve(changed);
+    tx.onabort = tx.onerror = () => reject(failure ?? tx.error);
+    const metadata = store.get(`meta:${expectedId}`);
+    const previous = store.get(`book:${expectedId}`);
+    const saved = store.get(`progress:${expectedId}`);
+    saved.onsuccess = () => {
+      try {
+        const meta = metadata.result as FullBookSummary | undefined;
+        if (book.id !== expectedId || !meta || meta.sha256 !== book.sha256 || meta.pageCount !== book.pageCount) throw new Error('This update does not match the saved source book.');
+        if ((book.revision ?? 1) <= (meta.revision ?? 1)) return;
+        const oldBook = previous.result as FullBook | undefined;
+        const progress = saved.result as ReadingProgress | undefined;
+        const oldPositions = new Map(oldBook?.diagrams.map(d => [d.id, d.fen]));
+        if (progress?.practice) {
+          const practice = { ...progress.practice };
+          for (const diagram of book.diagrams) {
+            if (practice[diagram.id] && !progress.positions?.[diagram.id] && oldPositions.get(diagram.id) !== diagram.fen) {
+              practice[diagram.id] = { ...practice[diagram.id], bookSolved: false, engineChecked: false };
+            }
+          }
+          store.put({ ...progress, practice }, `progress:${book.id}`);
+        }
+        store.put(book, `book:${book.id}`);
+        store.put({ ...meta, revision: book.revision, diagramCount: book.diagrams.length, exerciseCount: book.diagrams.filter(d => d.training).length }, `meta:${book.id}`);
+        changed = true;
+      } catch (cause) { failure = cause; tx.abort(); }
+    };
+  }));
+  if (changed) window.dispatchEvent(new Event(PRIVATE_BOOKS_EVENT));
 }
 
 export async function importBookPackage(data: Uint8Array, expectedId?: string) {

@@ -1,6 +1,6 @@
 # Private complete books
 
-`/books` stores a user's complete PDF, chapter index, extracted diagrams and progress in the separate `chessquest-private-books` IndexedDB database. Reimport and index upgrades preserve study marks, position corrections, attempts and the existing exercise library. Full books and their extracted content are private, outside Git and account sync.
+`/books` stores a user's complete PDF, chapter index, extracted diagrams and progress in the separate `chessquest-private-books` IndexedDB database. Reimport and index upgrades preserve study marks, position corrections, attempts and the existing exercise library. When an index update changes a starting position, its previous engine/book completion flags are cleared atomically with the update; attempts, revealed answers and user-corrected positions remain intact. Full books and their extracted content are private, outside Git and account sync.
 
 ## Training and reading
 

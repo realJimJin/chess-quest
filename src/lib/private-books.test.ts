@@ -121,3 +121,25 @@ it('keeps revealed, engine-checked and book-solved results distinct', async () =
   await Promise.all([recordBookPractice('fixture', 'one', 'attempt'), recordBookPractice('fixture', 'one', 'attempt')]);
   expect((await readBookProgress('fixture')).practice?.one.attempts).toBe(2);
 });
+
+it('invalidates grades for corrected source positions while retaining attempts, marks and user corrections', async () => {
+  const { correctBookDiagram, recordBookPractice, updateFullBookIndex } = await import('./private-books');
+  const book = await fixture();
+  book.diagrams.push({ ...book.diagrams[0], id: 'unchanged' }, { ...book.diagrams[0], id: 'user-corrected' });
+  await importBookPackage(pack(book));
+  await markBookDiagram(book.id, 'first-diagram', true);
+  await correctBookDiagram(book.id, 'user-corrected', '7k/8/8/8/8/8/1R6/K7 w - - 0 1');
+  for (const diagram of book.diagrams) {
+    for (const event of ['attempt', 'revealed', 'engine-checked', 'solved'] as const) await recordBookPractice(book.id, diagram.id, event);
+  }
+  const before = await readBookProgress(book.id);
+  const updated = structuredClone(book); updated.revision = 2;
+  updated.diagrams[0].fen = updated.diagrams[2].fen = '7k/8/8/8/8/8/1p6/KR6 w - - 0 1';
+  await updateFullBookIndex(updated, book.id);
+  const after = await readBookProgress(book.id);
+  expect(after).toEqual({ ...before, practice: { ...before.practice, 'first-diagram': { ...before.practice!['first-diagram'], engineChecked: false, bookSolved: false } } });
+  await expect(updateFullBookIndex({ ...updated, revision: 3, sha256: '0'.repeat(64) }, book.id)).rejects.toThrow('does not match');
+  expect(await readBookProgress(book.id)).toEqual(after);
+  expect((await loadFullBook(book.id)).book.revision).toBe(2);
+  expect(await (await loadFullBook(book.id)).pdf.text()).toBe(new TextDecoder().decode(pdf));
+});
