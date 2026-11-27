@@ -18,7 +18,8 @@
     "extract": "cd extraction && .venv/bin/python -m csx.cli",
     "build:ios": "bash scripts/build-ios.sh",
     "ios:open": "cap open ios",
-    "check:ui-export": "node scripts/check-ui-export.mjs"
+    "check:ui-export": "node scripts/check-ui-export.mjs",
+    "postinstall": "node scripts/copy-pdf-worker.mjs"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.33.0",
@@ -27,9 +28,11 @@
     "aws4fetch": "^1.0.20",
     "chess.js": "^1.4.0",
     "chessground": "^9.2.1",
+    "fflate": "^0.8.3",
     "idb-keyval": "^6.3.0",
     "jose": "^6.2.18",
     "next": "16.4.6",
+    "pdfjs-dist": "^6.5.438",
     "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
