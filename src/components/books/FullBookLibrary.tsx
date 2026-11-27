@@ -32,6 +32,8 @@ export default function FullBookLibrary() {
           // The decryption key stays in the URL fragment, never an HTTP request.
           // Remove it from the current history entry once all books are saved.
           window.history.replaceState(null, '', window.location.pathname);
+          // The same link may later deliver a corrected index in this tab.
+          started.current = 'library';
           setMessage('Your full books are saved on this device. Choose a book to begin.');
         } else setMessage('');
         await refresh();
